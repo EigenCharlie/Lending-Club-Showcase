@@ -95,10 +95,7 @@ def _collect_test_inventory() -> tuple[int, list[dict[str, int | str]]]:
             module = module_path.removeprefix("tests/").removesuffix(".py")
             counts[module] += 1
             total += 1
-        breakdown = [
-            {"module": module, "tests": int(n)}
-            for module, n in sorted(counts.items())
-        ]
+        breakdown = [{"module": module, "tests": int(n)} for module, n in sorted(counts.items())]
         return total, breakdown
     except Exception:
         pass
@@ -167,11 +164,7 @@ def suggest_sql_with_grok(
         "Rules: SQL must be read-only SELECT. No INSERT/UPDATE/DELETE/DDL. "
         "Use schema-qualified table names exactly as provided."
     )
-    user_prompt = (
-        f"Question:\n{question}\n\n"
-        f"Schema context:\n{schema_context}\n\n"
-        "Return JSON only."
-    )
+    user_prompt = f"Question:\n{question}\n\nSchema context:\n{schema_context}\n\nReturn JSON only."
 
     payload = {
         "model": model,
