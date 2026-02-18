@@ -1,0 +1,50 @@
+{
+  "iv_scores": {},
+  "n_features_total": 11,
+  "n_woe_features": 2,
+  "feature_lists": {
+    "numeric": [
+      "loan_amnt",
+      "annual_inc",
+      "loan_to_income",
+      "dti",
+      "rev_utilization",
+      "int_rate",
+      "installment"
+    ],
+    "flag": [],
+    "categorical": [
+      "int_rate_bucket",
+      "term"
+    ],
+    "woe": [
+      "grade_woe",
+      "home_ownership_woe"
+    ],
+    "interaction": [],
+    "catboost": [
+      "loan_amnt",
+      "annual_inc",
+      "loan_to_income",
+      "dti",
+      "rev_utilization",
+      "int_rate",
+      "installment",
+      "grade_woe",
+      "home_ownership_woe",
+      "int_rate_bucket",
+      "term"
+    ],
+    "logreg": [
+      "loan_amnt",
+      "annual_inc",
+      "loan_to_income",
+      "dti",
+      "rev_utilization",
+      "int_rate",
+      "installment",
+      "grade_woe",
+      "home_ownership_woe"
+    ]
+  }
+}

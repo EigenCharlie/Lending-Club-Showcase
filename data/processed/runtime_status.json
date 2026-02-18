@@ -1,0 +1,83 @@
+{
+  "generated_at_utc": "2026-02-18T02:01:16.704677+00:00",
+  "test_suite_total": 199,
+  "test_breakdown": [
+    {
+      "module": "test_api/test_router_normalization",
+      "tests": 5
+    },
+    {
+      "module": "test_config_consistency",
+      "tests": 13
+    },
+    {
+      "module": "test_data/test_build_datasets",
+      "tests": 13
+    },
+    {
+      "module": "test_data/test_make_dataset",
+      "tests": 8
+    },
+    {
+      "module": "test_data/test_prepare_dataset",
+      "tests": 8
+    },
+    {
+      "module": "test_docs/test_narrative_consistency",
+      "tests": 1
+    },
+    {
+      "module": "test_evaluation/test_ifrs9",
+      "tests": 19
+    },
+    {
+      "module": "test_evaluation/test_metrics",
+      "tests": 11
+    },
+    {
+      "module": "test_features/test_feature_engineering",
+      "tests": 3
+    },
+    {
+      "module": "test_features/test_schemas",
+      "tests": 2
+    },
+    {
+      "module": "test_integration",
+      "tests": 8
+    },
+    {
+      "module": "test_models/test_conformal",
+      "tests": 19
+    },
+    {
+      "module": "test_models/test_pd_model",
+      "tests": 9
+    },
+    {
+      "module": "test_optimization/test_portfolio",
+      "tests": 15
+    },
+    {
+      "module": "test_scripts/test_end_to_end_pipeline",
+      "tests": 2
+    },
+    {
+      "module": "test_scripts/test_export_streamlit_artifacts",
+      "tests": 1
+    },
+    {
+      "module": "test_scripts/test_mlflow_suite",
+      "tests": 13
+    },
+    {
+      "module": "test_streamlit/test_page_imports",
+      "tests": 43
+    },
+    {
+      "module": "test_utils/test_mlflow_utils",
+      "tests": 6
+    }
+  ],
+  "streamlit_pages_total": 20
+}
