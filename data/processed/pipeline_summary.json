@@ -3,20 +3,20 @@
     "batch_size": 276869,
     "pd_mean": 0.21308899935601605,
     "pd_auc": 0.6990158423364895,
-    "interval_width_mean": 0.7527398291749821,
+    "interval_width_mean": 0.7459297382063242,
     "stages": {
       "S1": 81260,
       "S2": 133358,
       "S3": 62251
     },
-    "ecl_expected": 797947859.741125,
-    "ecl_conservative": 1379834858.1941552,
-    "ecl_range": 581886998.4530302,
-    "robust_return": 1.3844841083018962e-07,
-    "robust_funded": 0,
+    "ecl_expected": 1010417398.085331,
+    "ecl_conservative": 1850841854.7033587,
+    "ecl_range": 840424456.6180277,
+    "robust_return": 2279.6133498500258,
+    "robust_funded": 9,
     "nonrobust_return": 77346.29891605514,
-    "nonrobust_funded": 0,
-    "price_of_robustness": 77346.29891591669,
+    "nonrobust_funded": 150,
+    "price_of_robustness": 75066.68556620511,
     "pipeline_time_s": 274.79
   },
   "pd_model": {
@@ -27,14 +27,14 @@
     "calibration_method": "Platt Sigmoid"
   },
   "conformal": {
-    "coverage_90": 0.9021053277903991,
-    "coverage_95": 0.9488819622276239,
+    "coverage_90": 0.8887235479595044,
+    "coverage_95": 0.9479573372244635,
     "overall_pass": false,
-    "n_checks_passed": 6
+    "n_checks_passed": 1
   },
   "survival": {
-    "cox_concordance": 0.40700756352056106,
-    "rsf_concordance": 0.6295373344336458
+    "cox_concordance": 0.6657339756314801,
+    "rsf_concordance": 0.6504937378540977
   },
   "dataset": {
     "n_loans": 50580,
