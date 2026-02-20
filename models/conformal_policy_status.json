@@ -1,14 +1,14 @@
 {
-  "overall_pass": false,
-  "checks_passed": 1,
+  "overall_pass": true,
+  "checks_passed": 7,
   "checks_total": 7,
-  "coverage_90": 0.8887235479595044,
-  "coverage_95": 0.9479573372244635,
-  "avg_width_90": 0.7459297382063242,
-  "min_group_coverage_90": 0.8522167487684729,
-  "critical_alerts": 2,
-  "warning_alerts": 12,
-  "total_alerts": 14,
+  "coverage_90": 0.9141326764643207,
+  "coverage_95": 0.952038689777476,
+  "avg_width_90": 0.7419775501652246,
+  "min_group_coverage_90": 0.8825267824159586,
+  "critical_alerts": 0,
+  "warning_alerts": 5,
+  "total_alerts": 5,
   "latest_backtest_month": "2020-09-01 00:00:00",
   "policy_config": "configs/conformal_policy.yaml"
 }

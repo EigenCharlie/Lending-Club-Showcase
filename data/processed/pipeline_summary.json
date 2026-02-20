@@ -1,36 +1,36 @@
 {
   "pipeline": {
     "batch_size": 276869,
-    "pd_mean": 0.21308899935601605,
-    "pd_auc": 0.6990158423364895,
-    "interval_width_mean": 0.7459297382063242,
+    "pd_mean": 0.2131711365801693,
+    "pd_auc": 0.7171838117742488,
+    "interval_width_mean": 0.7419775501652246,
     "stages": {
-      "S1": 81260,
-      "S2": 133358,
+      "S1": 96401,
+      "S2": 118217,
       "S3": 62251
     },
-    "ecl_expected": 1010417398.085331,
-    "ecl_conservative": 1850841854.7033587,
-    "ecl_range": 840424456.6180277,
-    "robust_return": 2279.6133498500258,
-    "robust_funded": 9,
-    "nonrobust_return": 77346.29891605514,
-    "nonrobust_funded": 150,
-    "price_of_robustness": 75066.68556620511,
+    "ecl_expected": 967995472.4972175,
+    "ecl_conservative": 1779233609.398992,
+    "ecl_range": 811238136.9017745,
+    "robust_return": 70050.3269791436,
+    "robust_funded": 129,
+    "nonrobust_return": 123451.85718303913,
+    "nonrobust_funded": 203,
+    "price_of_robustness": 53401.53020389553,
     "pipeline_time_s": 274.79
   },
   "pd_model": {
-    "final_auc": 0.6990158423364895,
-    "final_gini": 0.398031684672979,
-    "final_brier": 0.15721217085708036,
-    "final_ece": 0.013000949058385959,
-    "calibration_method": "Platt Sigmoid"
+    "final_auc": 0.7171838117742488,
+    "final_gini": 0.43436762354849767,
+    "final_brier": 0.15384696766361577,
+    "final_ece": 0.009396122353834845,
+    "calibration_method": "Isotonic Regression"
   },
   "conformal": {
-    "coverage_90": 0.8887235479595044,
-    "coverage_95": 0.9479573372244635,
-    "overall_pass": false,
-    "n_checks_passed": 1
+    "coverage_90": 0.9141326764643207,
+    "coverage_95": 0.952038689777476,
+    "overall_pass": true,
+    "n_checks_passed": 7
   },
   "survival": {
     "cox_concordance": 0.6657339756314801,
