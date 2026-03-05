@@ -5,12 +5,33 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
+from streamlit_app.components.context_help import methodology_dialog
 from streamlit_app.components.narrative import next_page_teaser
+from streamlit_app.components.story_shell import (
+    render_caveats,
+    render_key_takeaway,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
+
+
+def _safe_page_link(page_path: str, label: str, icon: str) -> None:
+    """AppTest-safe wrapper for page links outside multipage runtime."""
+    try:
+        st.page_link(page_path, label=label, icon=icon)
+    except Exception:
+        st.caption(f"{icon} {label} → {page_path}")
+
 
 st.title("🔬 Panorama de Investigación")
 st.caption(
     "Estado del arte, papers clave y propuestas de publicación "
     "derivadas de este proyecto de riesgo de crédito."
+)
+page_contract = get_page_contract("research_landscape")
+render_page_header(page_contract)
+render_key_takeaway(
+    "Esta página debe leerse como registro maestro de posicionamiento académico: concentra el mapa temático y reduce duplicación entre los drafts de paper."
 )
 
 st.markdown(
@@ -21,6 +42,128 @@ los papers seminales, el estado actual de la investigación, y cómo este proyec
 se posiciona respecto a la literatura existente.
 """
 )
+st.info(
+    "Regla narrativa del proyecto: en `tesis_especializacion.py` fairness conformal se reporta "
+    "como diagnóstico de gobernanza; la profundidad metodológica (cobertura condicional, trade-offs, "
+    "online/adaptive CP) se concentra aquí."
+)
+methodology_dialog(
+    "Cómo usar esta página (modo experto)",
+    """
+Uso recomendado para lector técnico:
+- Usa la matriz temática como índice de gaps y claims antes de entrar a cada sección.
+- Revisa las propuestas de publicación solo después de confirmar el posicionamiento frente a literatura.
+- Toma esta página como registro maestro para evitar duplicar referencias y claims en cada draft.
+""",
+    button_label="Ver guía de lectura (experto)",
+)
+
+st.subheader("0) Matriz temática y de posicionamiento (registro maestro)")
+theme_matrix = pd.DataFrame(
+    [
+        {
+            "Tema": "ML + calibración",
+            "Pregunta central": "Cómo pasar de ranking a probabilidad utilizable",
+            "Gap dominante": "Calibración y UQ subreportadas en credit scoring",
+            "Artefacto del proyecto": "PD calibrada + selección de calibrador",
+            "Draft principal": "Paper 1 / Paper 2",
+        },
+        {
+            "Tema": "Conformal Prediction (Mondrian)",
+            "Pregunta central": "Cómo garantizar cobertura útil por subgrupo",
+            "Gap dominante": "Poca evidencia en crédito real a gran escala",
+            "Artefacto del proyecto": "Coverage global+grupo, backtest mensual, alerts",
+            "Draft principal": "Paper 3",
+        },
+        {
+            "Tema": "Conformal + Robust Optimization",
+            "Pregunta central": "Cómo traducir incertidumbre en decisiones robustas",
+            "Gap dominante": "Muy poca intersección aplicada en crédito",
+            "Artefacto del proyecto": "Frontera robusta + price of robustness",
+            "Draft principal": "Paper 1",
+        },
+        {
+            "Tema": "IFRS9 E2E con UQ",
+            "Pregunta central": "Cómo llevar incertidumbre a staging/ECL",
+            "Gap dominante": "Pipelines IFRS9 con UQ distribution-free son raros",
+            "Artefacto del proyecto": "ECL por escenario + SICR con conformal width",
+            "Draft principal": "Paper 2",
+        },
+        {
+            "Tema": "Causalidad / Survival / Forecasting",
+            "Pregunta central": "Qué acción, cuándo y bajo qué régimen cambia el riesgo",
+            "Gap dominante": "Integración con decisión robusta y provisión",
+            "Artefacto del proyecto": "CATE + PD lifetime + escenarios",
+            "Draft principal": "Tesis / extensiones futuras",
+        },
+    ]
+)
+st.dataframe(theme_matrix, width="stretch", hide_index=True)
+
+st.subheader("0.1) Matriz de deduplicación entre drafts")
+dedup_matrix = pd.DataFrame(
+    [
+        {
+            "Elemento narrativo": "Fundamentos de conformal (Vovk 2005, garantía finita)",
+            "Página canónica": "research_landscape",
+            "Paper 1": "resumen corto + link",
+            "Paper 2": "solo lo necesario para IFRS9",
+            "Paper 3": "detalle completo",
+        },
+        {
+            "Elemento narrativo": "Calibración (Platt/Isotonic/Venn-Abers)",
+            "Página canónica": "model_laboratory + research_landscape",
+            "Paper 1": "impacto en optimización",
+            "Paper 2": "impacto en ECL/SICR",
+            "Paper 3": "solo prerequisito",
+        },
+        {
+            "Elemento narrativo": "Price of Robustness (Bertsimas & Sim)",
+            "Página canónica": "portfolio_optimizer + research_landscape",
+            "Paper 1": "detalle completo",
+            "Paper 2": "mención si conecta a provisiones",
+            "Paper 3": "no central",
+        },
+        {
+            "Elemento narrativo": "Mondrian coverage por grupo y drift temporal",
+            "Página canónica": "uncertainty_quantification + research_landscape",
+            "Paper 1": "solo como input de robustez",
+            "Paper 2": "solo como calidad de incertidumbre",
+            "Paper 3": "detalle completo",
+        },
+    ]
+)
+st.dataframe(dedup_matrix, width="stretch", hide_index=True)
+st.caption(
+    "Regla práctica: evita reescribir teoría completa en cada draft; cada paper debe reutilizar posicionamiento y concentrarse en su novelty claim."
+)
+
+st.subheader("0.2) Pitfalls operativos de Conformal Prediction")
+cp_pitfalls = pd.DataFrame(
+    [
+        {
+            "Pitfall": "Confundir cobertura marginal con cobertura condicional exacta",
+            "Riesgo operativo": "Sobreprometer garantia en cada observacion individual.",
+            "Mitigacion": "Explicitar alcance de validez y monitorear por segmento/tiempo.",
+        },
+        {
+            "Pitfall": "Fragmentacion de grupos en Mondrian",
+            "Riesgo operativo": "Cuantiles inestables en grupos con n bajo.",
+            "Mitigacion": "Usar min_group_size, fusion de grupos o particion jerarquica.",
+        },
+        {
+            "Pitfall": "Romper exchangeability bajo drift",
+            "Riesgo operativo": "Cobertura fuera de target pese a buen historico.",
+            "Mitigacion": "Backtest mensual + alertas + politica de recalibracion/escalamiento.",
+        },
+        {
+            "Pitfall": "Perseguir solo cobertura y olvidar ancho",
+            "Riesgo operativo": "Intervalos poco utiles por conservadurismo excesivo.",
+            "Mitigacion": "Optimizar balance validez-eficiencia con KPIs conjuntos.",
+        },
+    ]
+)
+st.dataframe(cp_pitfalls, width="stretch", hide_index=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. ML en Credit Scoring
@@ -91,7 +234,7 @@ cal_data = pd.DataFrame(
         },
     ]
 )
-st.dataframe(cal_data, use_container_width=True, hide_index=True)
+st.dataframe(cal_data, width="stretch", hide_index=True)
 
 with st.expander("Papers clave"):
     st.markdown(
@@ -356,10 +499,10 @@ y demostrando que la protección conformal produce portafolios estables bajo est
 robustez empírica.
 """
     )
-    st.page_link(
+    _safe_page_link(
         "pages/paper_1_cp_robust_opt.py",
-        label="Abrir workspace completo del Paper 1",
-        icon="🧪",
+        "Abrir workspace completo del Paper 1",
+        "🧪",
     )
 
 with tab2:
@@ -375,7 +518,7 @@ ECL (Expected Credit Loss) con intervalos de incertidumbre: ECL_low y ECL_high
 derivados de PD conformal × LGD × EAD. Introducimos el ancho del intervalo conformal
 (PD_high - PD_point) como señal adicional de SICR (Significant Increase in Credit Risk),
 complementando el criterio estándar de incremento en PD. Validamos en 277K préstamos
-out-of-time (2018-2020) con policy gates formales y monitoreo temporal.
+out-of-time (2018-2020) con controles formales de calidad y monitoreo temporal.
 
 **Contribución clave**: Conformal interval width como señal SICR + ECL por rango para
 lectura prudencial — ambos conceptos nuevos en la literatura IFRS9.
@@ -384,10 +527,10 @@ lectura prudencial — ambos conceptos nuevos en la literatura IFRS9.
 señal) → ECL_point, ECL_low, ECL_high → Stress testing bajo escenarios macro.
 """
     )
-    st.page_link(
+    _safe_page_link(
         "pages/paper_2_ifrs9_e2e.py",
-        label="Abrir workspace completo del Paper 2",
-        icon="🏦",
+        "Abrir workspace completo del Paper 2",
+        "🏦",
     )
 
 with tab3:
@@ -412,10 +555,10 @@ risk, con análisis detallado de coverage por subgrupo y recomendaciones prácti
 Mondrian by grade → Coverage validation (global + group-conditional) → Width analysis.
 """
     )
-    st.page_link(
+    _safe_page_link(
         "pages/paper_3_mondrian.py",
-        label="Abrir workspace completo del Paper 3",
-        icon="📐",
+        "Abrir workspace completo del Paper 3",
+        "📐",
     )
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -460,20 +603,43 @@ refs = pd.DataFrame(
         ["Gibbs & Candès", 2021, "NeurIPS", "Adaptive Conformal Inference bajo distribution shift"],
         ["Ayari et al.", 2026, "AI Review (Springer)", "Revisión sistemática: 63 papers, GB > LR"],
         ["Soni et al.", 2024, "Cybernetics and IT", "Review reciente de ML/DL para credit risk"],
-        ["Liu et al.", 2026, "Expert Systems with Applications", "Credit scoring con datos fragmentarios"],
-        ["Bárcena Saavedra et al.", 2024, "Expert Systems with Applications", "IFRS9 lifetime PD con competing risks"],
+        [
+            "Liu et al.",
+            2026,
+            "Expert Systems with Applications",
+            "Credit scoring con datos fragmentarios",
+        ],
+        [
+            "Bárcena Saavedra et al.",
+            2024,
+            "Expert Systems with Applications",
+            "IFRS9 lifetime PD con competing risks",
+        ],
         ["Botha & Verster", 2025, "arXiv", "Tutorial survival discreto para term-structure IFRS9"],
-        ["Schlembach et al.", 2025, "Machine Learning (Springer)", "Conformal multistep para series temporales"],
+        [
+            "Schlembach et al.",
+            2025,
+            "Machine Learning (Springer)",
+            "Conformal multistep para series temporales",
+        ],
         ["Wang & Hyndman", 2024, "arXiv / package", "Online conformal para multi-step forecasting"],
     ],
     columns=["Referencia", "Año", "Venue", "Relevancia para este proyecto"],
 )
-st.dataframe(refs, use_container_width=True, hide_index=True)
+st.dataframe(refs, width="stretch", hide_index=True)
 
-st.page_link(
+_safe_page_link(
     "pages/research_best_practices.py",
-    label="Abrir guía de buenas prácticas y herramientas para drafts",
-    icon="🧰",
+    "Abrir guía de buenas prácticas y herramientas para drafts",
+    "🧰",
+)
+
+render_caveats(
+    [
+        "La literatura evoluciona rápido; este mapa debe actualizarse antes de enviar versiones finales.",
+        "El objetivo es posicionamiento y foco narrativo, no exhaustividad bibliográfica absoluta.",
+    ],
+    title="Límites del panorama y mantenimiento del registro maestro",
 )
 
 next_page_teaser(

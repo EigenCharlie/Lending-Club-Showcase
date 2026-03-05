@@ -15,8 +15,23 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from streamlit_app.components.context_help import (
+    chart_help_popover,
+    methodology_dialog,
+    term_popover,
+)
+from streamlit_app.components.decision_panels import decision_checklist, tradeoff_panel
+from streamlit_app.components.dvc_kpi_spine import render_robustness_frontier_panel
 from streamlit_app.components.metric_cards import kpi_row
 from streamlit_app.components.narrative import next_page_teaser, storytelling_intro
+from streamlit_app.components.story_shell import (
+    render_caveats,
+    render_decision_box,
+    render_key_takeaway,
+    render_page_feedback,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.utils import (
     format_number,
@@ -31,6 +46,12 @@ st.caption(
     "Decisión de asignación de capital usando predicción de riesgo y "
     "bandas de incertidumbre conformal."
 )
+page_contract = get_page_contract("portfolio_optimizer")
+render_page_header(page_contract)
+render_key_takeaway(
+    "La optimización robusta convierte incertidumbre de modelo en una política explícita con costo económico medible."
+)
+term_popover("price_of_robustness", label="Qué es Price of Robustness")
 
 with st.expander("¿Qué es optimización de portafolio de crédito?", expanded=False):
     st.markdown(
@@ -71,6 +92,30 @@ storytelling_intro(
         "Evaluar si el Price of Robustness es aceptable para el apetito de riesgo actual.",
     ],
 )
+render_decision_box(
+    "Definir política por tolerancia de riesgo + aversión a incertidumbre y monitorear el costo de robustez como KPI.",
+    owner="Comité de Riesgo / Originación",
+    cadence="mensual o por campaña",
+)
+render_robustness_frontier_panel()
+tradeoff_panel(
+    "Trade-off central de la página",
+    upside="Mayor resiliencia ante error de PD y escenarios adversos.",
+    downside="Menor retorno esperado y menor volumen financiado.",
+    monitoring="Price of Robustness, n_funded, worst_case_pd y retorno robusto.",
+)
+methodology_dialog(
+    "Qué optimiza exactamente el modelo robusto",
+    """
+La formulación usa retorno esperado neto y restricciones de presupuesto/riesgo.
+
+La variante robusta reemplaza la PD puntual por un peor caso plausible (derivado de la banda conformal)
+en parte de las restricciones/objetivo para proteger downside.
+
+Resultado: solución más conservadora, con costo explícito (`Price of Robustness`).
+""",
+    button_label="Ver detalle de la formulación (alto nivel)",
+)
 
 st.markdown(
     """
@@ -102,9 +147,18 @@ if efficient_frontier.empty:
 
 kpi_row(
     [
-        {"label": "Retorno robusto", "value": format_number(pipeline.get("robust_return", 0), prefix="$")},
-        {"label": "Retorno no robusto", "value": format_number(pipeline.get("nonrobust_return", 0), prefix="$")},
-        {"label": "Price of Robustness", "value": format_number(pipeline.get("price_of_robustness", 0), prefix="$")},
+        {
+            "label": "Retorno robusto",
+            "value": format_number(pipeline.get("robust_return", 0), prefix="$"),
+        },
+        {
+            "label": "Retorno no robusto",
+            "value": format_number(pipeline.get("nonrobust_return", 0), prefix="$"),
+        },
+        {
+            "label": "Price of Robustness",
+            "value": format_number(pipeline.get("price_of_robustness", 0), prefix="$"),
+        },
         {"label": "Aprobados robusto", "value": str(int(pipeline.get("robust_funded", 0)))},
         {"label": "Aprobados no robusto", "value": str(int(pipeline.get("nonrobust_funded", 0)))},
         {"label": "Tamaño batch", "value": str(int(pipeline.get("batch_size", 0)))},
@@ -132,7 +186,7 @@ st.dataframe(
             },
         ]
     ),
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
 )
 
@@ -152,7 +206,7 @@ with col_img1:
         st.image(
             str(img),
             caption="Notebook 08: frontera eficiente con punto robusto vs no robusto.",
-            use_container_width=True,
+            width="stretch",
         )
     else:
         if efficient_frontier.empty:
@@ -167,7 +221,7 @@ with col_img1:
                 labels={"risk_wpd": "Riesgo (PD ponderada)", "return": "Retorno esperado"},
             )
             fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=320)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
             st.caption(
                 "Imagen de notebook no encontrada; se muestra la frontera reconstruida desde parquet."
             )
@@ -177,7 +231,7 @@ with col_img2:
         st.image(
             str(img),
             caption="Notebook 08: sensibilidad retorno/aprobaciones al límite de PD.",
-            use_container_width=True,
+            width="stretch",
         )
     else:
         fig = px.bar(
@@ -185,13 +239,23 @@ with col_img2:
             x="risk_tolerance",
             y="price_of_robustness_pct",
             title="Fallback: sensibilidad del price of robustness",
-            labels={"risk_tolerance": "Tolerancia de riesgo", "price_of_robustness_pct": "Price of Robustness (%)"},
+            labels={
+                "risk_tolerance": "Tolerancia de riesgo",
+                "price_of_robustness_pct": "Price of Robustness (%)",
+            },
         )
         fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=320)
-        st.plotly_chart(fig, use_container_width=True)
-        st.caption("Imagen de notebook no encontrada; se muestra sensibilidad usando resumen robusto actual.")
+        st.plotly_chart(fig, width="stretch")
+        st.caption(
+            "Imagen de notebook no encontrada; se muestra sensibilidad usando resumen robusto actual."
+        )
 
 st.subheader("1) Perfil de asignación sobre préstamos")
+chart_help_popover(
+    "perfil_asignacion",
+    what_to_look_at="qué proporción de préstamos recibe peso > 0 y cómo se concentra la asignación.",
+    common_misread="más concentración no siempre es mala; puede ser efecto de restricciones y riesgo.",
+)
 alloc_plot = alloc.copy()
 alloc_plot["financiado"] = alloc_plot["alloc"] > 0
 col1, col2 = st.columns(2)
@@ -206,7 +270,7 @@ with col1:
         labels={"alloc": "Peso asignado", "financiado": "Financiado"},
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: entender sparsidad de asignación. Insight: el optimizador concentra capital en un subconjunto reducido "
         "de préstamos con mejor trade-off riesgo-retorno."
@@ -229,7 +293,7 @@ with col2:
         labels={"pd_point": "PD puntual", "alloc": "Asignación", "int_rate": "Tasa interés"},
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: observar regla de selección en el plano PD-retorno implícito. Insight: asignaciones altas tienden a "
         "zonas de PD contenida y tasa atractiva."
@@ -242,7 +306,9 @@ with col2:
 
 st.subheader("2) Frontera eficiente clásica")
 if efficient_frontier.empty:
-    st.info("No hay `efficient_frontier.parquet`; usando frontera no robusta derivada de tradeoff cuando aplica.")
+    st.info(
+        "No hay `efficient_frontier.parquet`; usando frontera no robusta derivada de tradeoff cuando aplica."
+    )
 else:
     fig = px.line(
         efficient_frontier.sort_values("pd_cap"),
@@ -253,7 +319,7 @@ else:
         labels={"risk_wpd": "Riesgo (PD ponderada)", "return": "Retorno esperado"},
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: mostrar frontera eficiente sin robustez explícita. Insight: mayor retorno exige mayor riesgo promedio "
         "de cartera."
@@ -289,7 +355,7 @@ fig = px.line(
     },
 )
 fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390)
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 st.caption(
     "Propósito: cuantificar efecto de aversión a incertidumbre sobre retorno. Insight: mayor robustez reduce retorno esperado, "
     "pero estabiliza desempeño frente a error de PD."
@@ -317,7 +383,7 @@ summary_view = rob_summary[
     ]
 ].copy()
 summary_view["price_of_robustness_pct"] = summary_view["price_of_robustness_pct"] / 100
-st.dataframe(summary_view, use_container_width=True, hide_index=True)
+st.dataframe(summary_view, width="stretch", hide_index=True)
 
 fig = go.Figure()
 fig.add_trace(
@@ -343,7 +409,7 @@ fig.update_layout(
     yaxis_title="Retorno",
     height=390,
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 st.caption(
     "Propósito: comparar retorno robusto vs no robusto por tolerancia de riesgo. Insight: el price of robustness no es constante; "
     "depende del apetito de riesgo definido por negocio."
@@ -402,7 +468,7 @@ if not roi_grade.empty:
             height=400,
         )
         fig.update_layout(yaxis_title="ROI", yaxis_tickformat=".0%")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         st.caption(
             "ROI = (total recibido - monto fondeado) / monto fondeado. "
             "Barras de error muestran percentiles 10 y 90 — la dispersión crece con el riesgo."
@@ -417,7 +483,10 @@ if not roi_grade.empty:
                 mode="markers+text",
                 text=roi_grade["grade"],
                 textposition="top center",
-                marker={"size": roi_grade["n_loans"] / roi_grade["n_loans"].max() * 40 + 8, "color": "#0B5ED7"},
+                marker={
+                    "size": roi_grade["n_loans"] / roi_grade["n_loans"].max() * 40 + 8,
+                    "color": "#0B5ED7",
+                },
             )
         )
         fig.add_hline(y=0, line_dash="dash", line_color="#FF6B6B")
@@ -432,7 +501,7 @@ if not roi_grade.empty:
             xaxis_tickformat=".0%",
             yaxis_tickformat=".1%",
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         st.caption(
             "Tamaño del punto proporcional al volumen. Grade G es el único con ROI medio negativo. "
             "La frontera histórica valida las decisiones del optimizador."
@@ -441,11 +510,11 @@ if not roi_grade.empty:
     st.markdown(
         f"""
 **Lectura del ROI histórico:**
-- **Grades A-B**: ROI medio positivo ({roi_grade.iloc[0]['roi_mean']:.1%} y {roi_grade.iloc[1]['roi_mean']:.1%})
+- **Grades A-B**: ROI medio positivo ({roi_grade.iloc[0]["roi_mean"]:.1%} y {roi_grade.iloc[1]["roi_mean"]:.1%})
   con dispersión moderada. Son los segmentos donde el optimizador concentra capital.
 - **Grades D-F**: ROI medio aún positivo pero con **enorme dispersión** (P10 negativo, P90 alto).
   La incertidumbre justifica el enfoque robusto: sin protección, estos segmentos generan volatilidad.
-- **Grade G**: ROI medio **negativo** ({roi_grade.iloc[6]['roi_mean']:.1%}) — default rate ~49% destruye valor
+- **Grade G**: ROI medio **negativo** ({roi_grade.iloc[6]["roi_mean"]:.1%}) — default rate ~49% destruye valor
   incluso con tasas altas. El optimizador robusto los excluye correctamente.
 - La frontera riesgo-retorno histórica confirma que la relación no es lineal: más riesgo no siempre
   compensa con más retorno, validando la necesidad de optimización formal.
@@ -456,14 +525,19 @@ if not roi_term.empty:
     with st.expander("ROI por grade y plazo (36 vs 60 meses)"):
         roi_term_display = roi_term.copy()
         roi_term_display["term"] = roi_term_display["term"].str.strip()
-        roi_term_display = roi_term_display.rename(columns={
-            "grade": "Grade", "term": "Plazo", "n_loans": "Préstamos",
-            "default_rate": "Default rate", "roi_mean": "ROI medio",
-        })
+        roi_term_display = roi_term_display.rename(
+            columns={
+                "grade": "Grade",
+                "term": "Plazo",
+                "n_loans": "Préstamos",
+                "default_rate": "Default rate",
+                "roi_mean": "ROI medio",
+            }
+        )
         roi_term_display["Default rate"] = roi_term_display["Default rate"].map("{:.1%}".format)
         roi_term_display["ROI medio"] = roi_term_display["ROI medio"].map("{:.2%}".format)
         roi_term_display["Préstamos"] = roi_term_display["Préstamos"].map("{:,}".format)
-        st.dataframe(roi_term_display, use_container_width=True, hide_index=True)
+        st.dataframe(roi_term_display, width="stretch", hide_index=True)
         st.markdown(
             "Los préstamos a **60 meses** tienen consistentemente mayor default rate y menor ROI. "
             "El plazo largo amplifica la exposición temporal al riesgo, lo que se alinea con los "
@@ -477,6 +551,22 @@ de ML y Conformal se convierten en una política accionable. Aquí se hace visib
 marco cuantitativo para discutir apetito de riesgo con transparencia económica.
 """
 )
+decision_checklist(
+    "Checklist antes de adoptar una política robusta",
+    [
+        "Validar que `Price of Robustness` esté dentro del rango aceptable para el comité.",
+        "Confirmar que el volumen financiado siga alineado con metas comerciales.",
+        "Revisar estabilidad de KPIs conformal y calibración PD que alimentan el optimizador.",
+    ],
+)
+render_caveats(
+    [
+        "La frontera robusta depende de la calidad/calibración del modelo PD y de la banda conformal.",
+        "Un PoR bajo hoy no garantiza estabilidad futura si cambia la composición del portafolio.",
+        "La política óptima es condicional al conjunto de restricciones definido (presupuesto, caps, riesgo).",
+    ]
+)
+render_page_feedback("portfolio_optimizer")
 
 next_page_teaser(
     "Provisiones IFRS9",

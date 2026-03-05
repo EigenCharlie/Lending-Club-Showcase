@@ -10,12 +10,19 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 
-from pathlib import Path
-
 import streamlit as st
 
 from streamlit_app.components.narrative import next_page_teaser
-from streamlit_app.utils import get_notebook_image_path, load_notebook_image_manifest
+from streamlit_app.components.story_shell import (
+    render_key_takeaway,
+    render_page_feedback,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
+from streamlit_app.utils import (
+    get_notebook_image_path,
+    load_notebook_image_manifest,
+)
 
 
 def _render_figure_panel(stem: str, figure_meta: dict, idx: int) -> None:
@@ -38,6 +45,11 @@ st.title("📚 Atlas de Evidencia de Notebooks")
 st.caption(
     "Este atlas funciona como capítulos de un libro dinámico: cada notebook tiene un hilo conductor, "
     "preguntas explícitas, hallazgos clave y conexión con el siguiente módulo del pipeline."
+)
+page_contract = get_page_contract("notebook_evidence")
+render_page_header(page_contract)
+render_key_takeaway(
+    "El atlas no es una galería: cada figura debe explicar una decisión metodológica y su conexión con el siguiente módulo del pipeline."
 )
 st.markdown(
     """
@@ -382,8 +394,14 @@ NOTEBOOK_META = {
     },
 }
 
-manifest = load_notebook_image_manifest()
-tabs = st.tabs([NOTEBOOK_META[k]["titulo"] for k in NOTEBOOK_META])
+with st.status(
+    "Cargando atlas de figuras extraídas de notebooks...", expanded=False
+) as _atlas_status:
+    manifest = load_notebook_image_manifest()
+    tabs = st.tabs([NOTEBOOK_META[k]["titulo"] for k in NOTEBOOK_META])
+    _atlas_status.update(
+        label=f"Atlas cargado ({len(manifest)} imágenes indexadas)", state="complete"
+    )
 
 for tab, stem in zip(tabs, NOTEBOOK_META, strict=False):
     meta = NOTEBOOK_META[stem]
@@ -398,7 +416,9 @@ for tab, stem in zip(tabs, NOTEBOOK_META, strict=False):
 
         with st.expander("Galería completa extraída de este notebook (miniaturas)"):
             rows = [
-                row for row in manifest if row.get("notebook_stem") == stem and row.get("image_path", "").endswith(".png")
+                row
+                for row in manifest
+                if row.get("notebook_stem") == stem and row.get("image_path", "").endswith(".png")
             ]
             rows = sorted(rows, key=lambda r: (r.get("cell_index", 0), r.get("output_index", 0)))
             cols = st.columns(3)
@@ -419,6 +439,7 @@ Cada figura documenta una decisión metodológica concreta y, en conjunto, demue
 coherente de hipótesis, validación y traducción a impacto de negocio/regulatorio.
 """
 )
+render_page_feedback("notebook_evidence")
 
 next_page_teaser(
     "Visión End-to-End",

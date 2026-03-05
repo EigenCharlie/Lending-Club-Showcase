@@ -1,0 +1,168 @@
+{
+  "schema_version": "2026-03-03.1",
+  "generated_at_utc": "2026-03-05T00:52:44.668560+00:00",
+  "run_tag": "2026-03-04-C-core-balanced-cert2",
+  "overall_pass": false,
+  "checks": {
+    "pass_psi": false,
+    "pass_c2st": false,
+    "pass_breach_ratio": false
+  },
+  "thresholds": {
+    "psi_threshold": 0.25,
+    "ks_pvalue_min": 0.01,
+    "cvm_pvalue_min": 0.01,
+    "c2st_auc_max": 0.6,
+    "max_feature_breach_ratio": 0.15
+  },
+  "summary": {
+    "n_features": 35,
+    "max_psi": 0.2648177602964039,
+    "mean_psi": 0.039966421603273385,
+    "min_ks_pvalue": 0.0,
+    "min_cvm_pvalue": 3.505639545320349e-08,
+    "c2st_auc": 0.9649624533333334,
+    "psi_breaches": 2,
+    "ks_breaches": 34,
+    "cvm_breaches": 35,
+    "feature_breach_ratio": 0.6761904761904762,
+    "c2st_rows_used": 100000
+  },
+  "artifacts": {
+    "drift_monitoring_path": "data/processed/drift_monitoring.parquet",
+    "drift_monitoring_v2_path": "data/processed/drift_monitoring_v2.parquet"
+  },
+  "top_drift_features": [
+    {
+      "feature": "rev_utilization",
+      "train_n": 1345568,
+      "test_n": 276473,
+      "psi": 0.2648177602964039,
+      "ks_statistic": 0.21766333887760275,
+      "ks_pvalue": 0.0,
+      "cvm_statistic": 5706.684847719298,
+      "cvm_pvalue": 6.36734151848728e-07,
+      "pass_psi": false,
+      "pass_ks": false,
+      "pass_cvm": false
+    },
+    {
+      "feature": "high_util_pct",
+      "train_n": 1285609,
+      "test_n": 272628,
+      "psi": 0.2538517217984482,
+      "ks_statistic": 0.2289938852318189,
+      "ks_pvalue": 0.0,
+      "cvm_statistic": 12824.0474884141,
+      "cvm_pvalue": 1.0445560424399147e-06,
+      "pass_psi": false,
+      "pass_ks": false,
+      "pass_cvm": false
+    },
+    {
+      "feature": "fico_score",
+      "train_n": 1346311,
+      "test_n": 276869,
+      "psi": 0.13188514579449653,
+      "ks_statistic": 0.151355888888844,
+      "ks_pvalue": 0.0,
+      "cvm_statistic": 4697.038270947465,
+      "cvm_pvalue": 6.42894410152195e-07,
+      "pass_psi": true,
+      "pass_ks": false,
+      "pass_cvm": false
+    },
+    {
+      "feature": "int_rate",
+      "train_n": 1346311,
+      "test_n": 276869,
+      "psi": 0.09016306516535763,
+      "ks_statistic": 0.07712170543095859,
+      "ks_pvalue": 0.0,
+      "cvm_statistic": 408.9900682331936,
+      "cvm_pvalue": 9.335967487977825e-08,
+      "pass_psi": true,
+      "pass_ks": false,
+      "pass_cvm": false
+    },
+    {
+      "feature": "revol_bal_to_income",
+      "train_n": 1346243,
+      "test_n": 276157,
+      "psi": 0.07168122590715041,
+      "ks_statistic": 0.10763062288336783,
+      "ks_pvalue": 0.0,
+      "cvm_statistic": 1429.009811849537,
+      "cvm_pvalue": 3.018126545351052e-07,
+      "pass_psi": true,
+      "pass_ks": false,
+      "pass_cvm": false
+    },
+    {
+      "feature": "log_revol_bal",
+      "train_n": 1346311,
+      "test_n": 276869,
+      "psi": 0.05464549743872172,
+      "ks_statistic": 0.08489061949218146,
+      "ks_pvalue": 0.0,
+      "cvm_statistic": 817.6192369151977,
+      "cvm_pvalue": 1.6830763016617567e-07,
+      "pass_psi": true,
+      "pass_ks": false,
+      "pass_cvm": false
+    },
+    {
+      "feature": "revol_bal",
+      "train_n": 1346311,
+      "test_n": 276869,
+      "psi": 0.05464549743872172,
+      "ks_statistic": 0.08489061949218146,
+      "ks_pvalue": 0.0,
+      "cvm_statistic": 817.6192369151977,
+      "cvm_pvalue": 1.6830763016617567e-07,
+      "pass_psi": true,
+      "pass_ks": false,
+      "pass_cvm": false
+    },
+    {
+      "feature": "loan_to_income",
+      "train_n": 1346243,
+      "test_n": 276157,
+      "psi": 0.049875390135661654,
+      "ks_statistic": 0.06335961764275155,
+      "ks_pvalue": 0.0,
+      "cvm_statistic": 357.2403878152836,
+      "cvm_pvalue": 8.081710523022423e-08,
+      "pass_psi": true,
+      "pass_ks": false,
+      "pass_cvm": false
+    },
+    {
+      "feature": "loan_to_income_sq",
+      "train_n": 1346243,
+      "test_n": 276157,
+      "psi": 0.049875390135661654,
+      "ks_statistic": 0.06335961764275155,
+      "ks_pvalue": 0.0,
+      "cvm_statistic": 357.24039373087,
+      "cvm_pvalue": 8.081712232765881e-08,
+      "pass_psi": true,
+      "pass_ks": false,
+      "pass_cvm": false
+    },
+    {
+      "feature": "installment_burden",
+      "train_n": 1346243,
+      "test_n": 276157,
+      "psi": 0.04304794320052876,
+      "ks_statistic": 0.054883480737175916,
+      "ks_pvalue": 0.0,
+      "cvm_statistic": 326.0764670301287,
+      "cvm_pvalue": 7.67399400691815e-08,
+      "pass_psi": true,
+      "pass_ks": false,
+      "pass_cvm": false
+    }
+  ],
+  "policy_config": "configs/mrm_policy.yaml"
+}

@@ -1,0 +1,34 @@
+{
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 3080",
+    "vram_mb": 10240,
+    "cpu": "AMD Ryzen 5 5600X",
+    "ram_gb": 24,
+    "platform": "WSL2",
+    "driver": "595.71",
+    "graphics_clock_mhz": 210,
+    "temperature_c": 48,
+    "gpu_utilization_pct": 2,
+    "memory_used_mb": 1066,
+    "memory_total_mb_reported": 10240,
+    "wsl_free_m": "               total        used        free      shared  buff/cache   available\nMem:           26049        2801       22269           3         895       23247\nSwap:          16384        1941       14442\n"
+  },
+  "versions": {
+    "cudf": "not installed",
+    "cuml": "not installed",
+    "cugraph": "not installed",
+    "cuopt": "not installed",
+    "cupy": "not installed",
+    "polars": "1.38.1",
+    "duckdb": "1.4.4",
+    "pandas": "2.3.3",
+    "numpy": "2.4.2",
+    "scipy": "1.15.3",
+    "sklearn": "1.8.0"
+  },
+  "config": {
+    "profile": "current",
+    "repeats": 3,
+    "warmup": 1
+  }
+}

@@ -1,6 +1,6 @@
 {
   "n_loans": 1346311,
-  "n_features": 32,
+  "n_features": 35,
   "default_rate": 0.1852,
   "n_defaults": 249380,
   "date_range": {
@@ -50,5 +50,7 @@
   "term_distribution": {
     "36.0": 1005656,
     "60.0": 340655
-  }
+  },
+  "schema_version": "2026-02-26.1",
+  "generated_at_utc": "2026-03-05T00:52:47.924203+00:00"
 }

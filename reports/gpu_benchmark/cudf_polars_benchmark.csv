@@ -1,0 +1,7 @@
+mode,median_seconds,rows_out,checksum,status,speedup_vs_pandas_cpu
+pandas_cpu,2.8265312820001327,76.0,3796755863.2245646,ok,1.0
+pandas_cudf,,,,error: No module named 'cudf',
+polars_cpu,0.1460174270000607,76.0,3796755863.224565,ok,19.3574927326925
+polars_gpu,,,,"error: GPU engine requested, but required package 'cudf_polars' not found.
+Please install using the command `pip install cudf-polars-cu12` (CUDA 12 is required for RAPIDS cuDF v25.08 and later). If your system has a CUDA 11 driver, install with `pip install cudf-polars-cu11==25.06` ",
+duckdb,0.1502013239999087,76.0,3796755863.2245646,ok,18.81828473097781

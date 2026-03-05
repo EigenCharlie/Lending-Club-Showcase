@@ -7,7 +7,15 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from streamlit_app.components.context_help import methodology_dialog
 from streamlit_app.components.paper_scaffold import render_phase_tracker
+from streamlit_app.components.story_shell import (
+    render_key_takeaway,
+    render_next_steps,
+    render_page_header,
+    render_section_checkpoint,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.utils import (
     download_table,
@@ -19,9 +27,27 @@ from streamlit_app.utils import (
 
 st.title("🏦 Paper 2 — Working Draft")
 st.caption("An End-to-End ML Pipeline for IFRS9 with Distribution-Free Uncertainty")
+page_contract = get_page_contract("paper_2_ifrs9_e2e")
+render_page_header(page_contract)
+render_key_takeaway(
+    "Novelty claim del draft: llevar incertidumbre conformal a staging/ECL IFRS9 mediante señales operativas (incluyendo ancho conformal como apoyo SICR)."
+)
 st.warning(
     "Borrador de trabajo para revisión académica. El foco es mostrar el máximo material "
     "técnico disponible para evaluar factibilidad y aporte científico."
+)
+methodology_dialog(
+    "Regla de foco narrativo del Paper 2",
+    """
+Evita convertir este draft en un paper de modelado PD genérico.
+
+Foco correcto:
+- Pipeline IFRS9 accionable
+- ECL por rango / incertidumbre
+- SICR con señal conformal
+- Sensibilidad y gobernanza prudencial
+""",
+    button_label="Ver foco narrativo (Paper 2)",
 )
 
 pipeline_summary = try_load_json("pipeline_summary", directory="data", default={})
@@ -31,6 +57,7 @@ ifrs9_grade = try_load_parquet("ifrs9_scenario_grade_summary")
 
 pipeline = pipeline_summary.get("pipeline", {})
 stages = pipeline.get("stages", {}) if isinstance(pipeline.get("stages"), dict) else {}
+
 
 def _safe_money(value: float) -> str:
     return format_number(float(value), prefix="$") if np.isfinite(value) else "N/D"
@@ -70,16 +97,32 @@ severe, severe_label = _pick_scenario_row(ifrs9_summary, ["severe_stress", "seve
 if severe.empty:
     severe, severe_label = _pick_worst_scenario_row(ifrs9_summary)
 
-baseline_ecl = float(baseline["total_ecl"].iloc[0]) if (not baseline.empty and "total_ecl" in baseline.columns) else np.nan
-severe_ecl = float(severe["total_ecl"].iloc[0]) if (not severe.empty and "total_ecl" in severe.columns) else np.nan
-uplift = (severe_ecl / baseline_ecl - 1.0) if np.isfinite(baseline_ecl) and baseline_ecl > 0 and np.isfinite(severe_ecl) else np.nan
+baseline_ecl = (
+    float(baseline["total_ecl"].iloc[0])
+    if (not baseline.empty and "total_ecl" in baseline.columns)
+    else np.nan
+)
+severe_ecl = (
+    float(severe["total_ecl"].iloc[0])
+    if (not severe.empty and "total_ecl" in severe.columns)
+    else np.nan
+)
+uplift = (
+    (severe_ecl / baseline_ecl - 1.0)
+    if np.isfinite(baseline_ecl) and baseline_ecl > 0 and np.isfinite(severe_ecl)
+    else np.nan
+)
 severe_label_display = severe_label if severe_label else "escenario severo"
 scenario_values = (
     sorted(ifrs9_summary["scenario"].astype(str).unique().tolist())
     if (not ifrs9_summary.empty and "scenario" in ifrs9_summary.columns)
     else []
 )
-scenario_list_display = ", ".join(f"`{name}`" for name in scenario_values) if scenario_values else "`baseline`, `adverse`, `severe`"
+scenario_list_display = (
+    ", ".join(f"`{name}`" for name in scenario_values)
+    if scenario_values
+    else "`baseline`, `adverse`, `severe`"
+)
 
 stage1_n = int(stages.get("S1", 0) or 0)
 stage2_n = int(stages.get("S2", 0) or 0)
@@ -90,14 +133,17 @@ meta_df = pd.DataFrame(
     [
         {"Campo": "Estado", "Valor": "Working Draft"},
         {"Campo": "Venue sugerido", "Valor": "Journal of Banking & Finance"},
-        {"Campo": "Pregunta", "Valor": "Como integrar incertidumbre conformal en un pipeline IFRS9 accionable"},
+        {
+            "Campo": "Pregunta",
+            "Valor": "Como integrar incertidumbre conformal en un pipeline IFRS9 accionable",
+        },
         {"Campo": "Dataset", "Valor": "Lending Club (split OOT)"},
         {"Campo": "ECL baseline", "Valor": _safe_money(baseline_ecl)},
         {"Campo": f"ECL {severe_label_display}", "Valor": _safe_money(severe_ecl)},
         {"Campo": f"Uplift {severe_label_display} vs baseline", "Valor": _safe_pct(uplift)},
     ]
 )
-st.dataframe(meta_df, use_container_width=True, hide_index=True)
+st.dataframe(meta_df, width="stretch", hide_index=True)
 if severe_label and severe_label != "severe_stress":
     st.caption(
         f"Nota de trazabilidad: el escenario severo en el artefacto actual se llama `{severe_label}`."
@@ -124,6 +170,14 @@ clasico. El resultado es una lectura prudencial de provisiones con sensibilidad 
 a incertidumbre estadistica.
 """
 )
+render_section_checkpoint(
+    "Checkpoint de framing (Paper 2)",
+    [
+        "Claim principal: incertidumbre conformal integrada a IFRS9 E2E.",
+        "Aporte práctico: ECL por rango y lectura prudencial más explícita.",
+        "Aporte metodológico: SICR enriquecido con señal de incertidumbre.",
+    ],
+)
 
 st.markdown("## 2) Introduction")
 st.markdown(
@@ -142,14 +196,26 @@ que explicita la fragilidad de resultados frente a supuestos macro y parametros 
 st.markdown("## 3) Related Work (Resumen para borrador)")
 related = pd.DataFrame(
     [
-        ["Bárcena Saavedra et al. (2024)", "IFRS9 lifetime PD", "Supervivencia/competing risks para ECL lifetime"],
-        ["Bellini et al. (2024)", "Credit risk modelling", "Puente regulatorio entre modelado y reporting"],
-        ["Gibbs & Candes (2021)", "Adaptive conformal", "Fundamento para monitoreo bajo drift temporal"],
+        [
+            "Bárcena Saavedra et al. (2024)",
+            "IFRS9 lifetime PD",
+            "Supervivencia/competing risks para ECL lifetime",
+        ],
+        [
+            "Bellini et al. (2024)",
+            "Credit risk modelling",
+            "Puente regulatorio entre modelado y reporting",
+        ],
+        [
+            "Gibbs & Candes (2021)",
+            "Adaptive conformal",
+            "Fundamento para monitoreo bajo drift temporal",
+        ],
         ["Vovk & Petej (2014)", "Venn-Abers", "Calibracion con enfoque intervalar y validez"],
     ],
     columns=["Referencia", "Eje", "Relevancia para este draft"],
 )
-st.dataframe(related, use_container_width=True, hide_index=True)
+st.dataframe(related, width="stretch", hide_index=True)
 
 st.markdown("## 4) Data and Experimental Protocol")
 st.markdown(
@@ -173,17 +239,26 @@ st.markdown("### 5.2 SICR Trigger with Conformal Width")
 st.latex(
     r"\mathrm{Stage2}_i = \mathbb{1}\left[\Delta \widehat{PD}_i > \theta_{PD} \;\lor\; (w_i > q_{0.9}(w)\wedge \Delta \widehat{PD}_i \ge 0)\right]"
 )
-st.caption("Equation 2. Trigger SICR combinado: deterioro de PD o incertidumbre alta sin mejora de PD.")
+st.caption(
+    "Equation 2. Trigger SICR combinado: deterioro de PD o incertidumbre alta sin mejora de PD."
+)
 
 st.markdown("### 5.3 Scenario Sensitivity")
 st.latex(
     r"\mathrm{ECL}_{\mathrm{portfolio}}(\gamma_{PD},\gamma_{LGD},r)=\sum_i \mathrm{ECL}_{i}(\gamma_{PD}\cdot PD_i,\gamma_{LGD}\cdot LGD_i,r)"
 )
-st.caption("Equation 3. Grilla de sensibilidad de provisiones frente a multiplicadores y tasa de descuento.")
+st.caption(
+    "Equation 3. Grilla de sensibilidad de provisiones frente a multiplicadores y tasa de descuento."
+)
 
 st.markdown("## 6) Results")
 
-if not ifrs9_summary.empty and {"scenario", "stage1_share", "stage2_share", "stage3_share"}.issubset(ifrs9_summary.columns):
+if not ifrs9_summary.empty and {
+    "scenario",
+    "stage1_share",
+    "stage2_share",
+    "stage3_share",
+}.issubset(ifrs9_summary.columns):
     stage_share = ifrs9_summary[["scenario", "stage1_share", "stage2_share", "stage3_share"]].melt(
         id_vars=["scenario"],
         var_name="stage",
@@ -199,13 +274,24 @@ if not ifrs9_summary.empty and {"scenario", "stage1_share", "stage2_share", "sta
         labels={"scenario": "Escenario", "share": "Proporcion"},
         template=PLOTLY_TEMPLATE,
     )
-    st.plotly_chart(fig1, use_container_width=True)
+    st.plotly_chart(fig1, width="stretch")
     st.caption("Figure 1. Composicion de Stage 1/2/3 bajo cada escenario IFRS9.")
 
-if not ifrs9_summary.empty and {"scenario", "total_ecl_low", "total_ecl_point", "total_ecl_high"}.issubset(ifrs9_summary.columns):
-    ecl_range_plot = ifrs9_summary[["scenario", "total_ecl_low", "total_ecl_point", "total_ecl_high"]].copy()
-    ecl_range_plot["err_up"] = (ecl_range_plot["total_ecl_high"] - ecl_range_plot["total_ecl_point"]).clip(lower=0)
-    ecl_range_plot["err_down"] = (ecl_range_plot["total_ecl_point"] - ecl_range_plot["total_ecl_low"]).clip(lower=0)
+if not ifrs9_summary.empty and {
+    "scenario",
+    "total_ecl_low",
+    "total_ecl_point",
+    "total_ecl_high",
+}.issubset(ifrs9_summary.columns):
+    ecl_range_plot = ifrs9_summary[
+        ["scenario", "total_ecl_low", "total_ecl_point", "total_ecl_high"]
+    ].copy()
+    ecl_range_plot["err_up"] = (
+        ecl_range_plot["total_ecl_high"] - ecl_range_plot["total_ecl_point"]
+    ).clip(lower=0)
+    ecl_range_plot["err_down"] = (
+        ecl_range_plot["total_ecl_point"] - ecl_range_plot["total_ecl_low"]
+    ).clip(lower=0)
 
     fig2 = px.bar(
         ecl_range_plot,
@@ -217,17 +303,23 @@ if not ifrs9_summary.empty and {"scenario", "total_ecl_low", "total_ecl_point", 
         labels={"scenario": "Escenario", "total_ecl_point": "ECL point"},
         template=PLOTLY_TEMPLATE,
     )
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width="stretch")
     st.caption("Figure 2. ECL point con barras de incertidumbre conformal (`low` a `high`).")
 
-if not ifrs9_grid.empty and {"pd_mult", "lgd_mult", "discount_rate", "total_ecl"}.issubset(ifrs9_grid.columns):
+if not ifrs9_grid.empty and {"pd_mult", "lgd_mult", "discount_rate", "total_ecl"}.issubset(
+    ifrs9_grid.columns
+):
     discount_values = sorted(ifrs9_grid["discount_rate"].dropna().unique().tolist())
-    target_discount = 0.05 if 0.05 in discount_values else (discount_values[0] if discount_values else None)
+    target_discount = (
+        0.05 if 0.05 in discount_values else (discount_values[0] if discount_values else None)
+    )
 
     if target_discount is not None:
         grid_slice = ifrs9_grid.loc[ifrs9_grid["discount_rate"] == target_discount].copy()
         heat = (
-            grid_slice.pivot_table(index="pd_mult", columns="lgd_mult", values="total_ecl", aggfunc="mean")
+            grid_slice.pivot_table(
+                index="pd_mult", columns="lgd_mult", values="total_ecl", aggfunc="mean"
+            )
             / 1_000_000
         )
         fig3 = px.imshow(
@@ -237,10 +329,12 @@ if not ifrs9_grid.empty and {"pd_mult", "lgd_mult", "discount_rate", "total_ecl"
             text_auto=".1f",
             template=PLOTLY_TEMPLATE,
         )
-        st.plotly_chart(fig3, use_container_width=True)
+        st.plotly_chart(fig3, width="stretch")
         st.caption("Figure 3. Sensibilidad de ECL ante variaciones de PD y LGD.")
 
-if not ifrs9_grade.empty and {"scenario", "grade", "total_ecl", "stage3_share"}.issubset(ifrs9_grade.columns):
+if not ifrs9_grade.empty and {"scenario", "grade", "total_ecl", "stage3_share"}.issubset(
+    ifrs9_grade.columns
+):
     baseline_grade = ifrs9_grade.loc[ifrs9_grade["scenario"] == "baseline"].copy()
     if not baseline_grade.empty:
         fig4 = px.bar(
@@ -252,7 +346,7 @@ if not ifrs9_grade.empty and {"scenario", "grade", "total_ecl", "stage3_share"}.
             labels={"total_ecl": "ECL baseline", "stage3_share": "Stage 3 share"},
             template=PLOTLY_TEMPLATE,
         )
-        st.plotly_chart(fig4, use_container_width=True)
+        st.plotly_chart(fig4, width="stretch")
         st.caption("Figure 4. ECL baseline por grade con intensidad de Stage 3.")
 
 st.markdown("### Tablas principales")
@@ -262,7 +356,7 @@ with col_t1:
     if ifrs9_summary.empty:
         st.info("No se encontro `ifrs9_scenario_summary.parquet`.")
     else:
-        st.dataframe(ifrs9_summary, use_container_width=True, hide_index=True)
+        st.dataframe(ifrs9_summary, width="stretch", hide_index=True)
         download_table(ifrs9_summary, "paper2_table1_scenario_summary.csv")
 
 with col_t2:
@@ -270,7 +364,7 @@ with col_t2:
     if ifrs9_grid.empty:
         st.info("No se encontro `ifrs9_sensitivity_grid.parquet`.")
     else:
-        st.dataframe(ifrs9_grid, use_container_width=True, hide_index=True)
+        st.dataframe(ifrs9_grid, width="stretch", hide_index=True)
         download_table(ifrs9_grid, "paper2_table2_sensitivity_grid.csv")
 
 with st.expander("Appendix Tables"):
@@ -278,7 +372,7 @@ with st.expander("Appendix Tables"):
     if ifrs9_grade.empty:
         st.info("No se encontro `ifrs9_scenario_grade_summary.parquet`.")
     else:
-        st.dataframe(ifrs9_grade, use_container_width=True, hide_index=True)
+        st.dataframe(ifrs9_grade, width="stretch", hide_index=True)
         download_table(ifrs9_grade, "paper2_tableA1_grade_summary.csv")
 
 st.markdown("## 7) Discussion")
@@ -361,4 +455,18 @@ st.markdown(
 - **Figure 4**: revisar si ordenar por riesgo esperado o por contribucion marginal a ECL.
 - **Table 1 / Table 2 / Table A1**: podar columnas para version principal y mover detalle a anexo.
 """
+)
+render_next_steps(
+    [
+        (
+            "Panorama de Investigación",
+            "Posicionamiento y referencias maestras para evitar duplicación teórica.",
+            "pages/research_landscape.py",
+        ),
+        (
+            "Buenas Prácticas y Herramientas",
+            "Checklist de draft y revisión para reunión con profesor.",
+            "pages/research_best_practices.py",
+        ),
+    ]
 )

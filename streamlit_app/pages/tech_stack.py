@@ -7,6 +7,12 @@ import streamlit as st
 from streamlit_mermaid import st_mermaid
 
 from streamlit_app.components.narrative import next_page_teaser
+from streamlit_app.components.story_shell import (
+    render_key_takeaway,
+    render_page_feedback,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.utils import load_runtime_status
 
 
@@ -21,6 +27,11 @@ st.title("🛠️ Stack Tecnológico")
 st.caption(
     "Librerías, versiones, decisiones de diseño y prácticas de ingeniería "
     "del pipeline de riesgo de crédito."
+)
+page_contract = get_page_contract("tech_stack")
+render_page_header(page_contract)
+render_key_takeaway(
+    "La elección de librerías y prácticas se documenta como parte de la reproducibilidad y gobernanza del pipeline, no como catálogo decorativo."
 )
 
 st.markdown(
@@ -100,7 +111,7 @@ with tabs[0]:
                 ],
             ]
         ),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -124,7 +135,7 @@ with tabs[1]:
                 ],
             ]
         ),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
     st.info(
@@ -160,7 +171,7 @@ with tabs[2]:
                 ],
             ]
         ),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
     st.caption("Ecosistema Nixtla: las tres librerías comparten API y son interoperables.")
@@ -185,7 +196,7 @@ with tabs[3]:
                 ],
             ]
         ),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -209,7 +220,7 @@ with tabs[4]:
                 ],
             ]
         ),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -240,7 +251,7 @@ with tabs[5]:
                 ],
             ]
         ),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
     st.info(
@@ -282,7 +293,7 @@ with tabs[6]:
                 ],
             ]
         ),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -320,7 +331,7 @@ with tabs[7]:
                 ],
             ]
         ),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -351,7 +362,7 @@ with tabs[8]:
                 ],
             ]
         ),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -375,7 +386,7 @@ with tabs[9]:
                 ],
             ]
         ),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -420,7 +431,7 @@ with tabs[10]:
                 ],
             ]
         ),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -429,7 +440,9 @@ with tabs[10]:
 # ══════════════════════════════════════════════════════════════════════════════
 st.subheader("2) Prácticas de ingeniería")
 
-runtime_status = load_runtime_status()
+with st.status("Cargando snapshot de runtime del proyecto...", expanded=False) as _rt_status:
+    runtime_status = load_runtime_status()
+    _rt_status.update(label="Snapshot de runtime cargado", state="complete")
 TEST_SUITE_TOTAL = int(runtime_status.get("test_suite_total", 0) or 0)
 PAGES_TOTAL = int(runtime_status.get("streamlit_pages_total", 0) or 0)
 PAGES_LABEL = str(PAGES_TOTAL) if PAGES_TOTAL > 0 else "N/D"
@@ -470,7 +483,7 @@ with st.expander(f"Testing: {TEST_SUITE_TOTAL} tests con pytest"):
         TEST_BREAKDOWN,
         columns=["Módulo", "Tests", "Qué valida"],
     )
-    st.dataframe(test_data, use_container_width=True, hide_index=True)
+    st.dataframe(test_data, width="stretch", hide_index=True)
     st.markdown(
         """
 **Patrones de testing**:
@@ -569,7 +582,7 @@ with st.expander("Configuración: YAML + Pandera"):
 - `pd_model.yaml`: hiperparámetros CatBoost, paths, features, calibración, conformal
 - `conformal_policy.yaml`: umbrales de cobertura, alertas, artefactos
 - `optimization.yaml`: tipo de solver, presupuesto, concentración, robustez
-- `modeva_governance.yaml`: fairness, drift, robustness diagnostics
+- `fairness_policy.yaml`: umbrales de equidad (DPD, DIR, EO)
 
 **Pandera schemas** en `src/features/schemas.py`: validación en boundaries del pipeline.
 Cada DataFrame pasa por un schema check antes de persistirse o consumirse downstream.
@@ -599,12 +612,13 @@ with st.expander("Gestión de paquetes: uv"):
 escrita en Rust.
 
 - `uv sync --extra dev`: instala dependencias de desarrollo (pytest, ruff)
-- `uv sync --extra platform`: instala dbt + Feast (incompatible con dev)
+- `uv sync --extra platform`: instala dbt (opcional, en el venv principal)
+- `uv venv .venv-feast && uv pip install --python .venv-feast/bin/python -r requirements/feast-platform.txt`: Feast en venv separado
 - `uv.lock`: lock file frozen para reproducibilidad exacta
-- `.venv/`: virtualenv Linux nativo en WSL2
+- `lending-club-venv/`: virtualenv principal Linux nativo en WSL2 (compat symlink `.venv`)
 
-**Nota**: los extras `dev` y `platform` no pueden coexistir debido a conflictos
-de versiones (feast requiere numpy>=2, mpi-sppy requiere numpy<2).
+**Nota**: Feast se mantiene fuera del `pyproject` principal para evitar pinnear
+`uvicorn<=0.34` y bloquear upgrades del API.
 """
     )
 
@@ -645,6 +659,44 @@ make_dataset → prepare_dataset → build_datasets
 - **Git mirror**: sincronización automática con GitHub
 - **DVC remote**: almacenamiento de parquets y modelos serializados
 - **MLflow UI**: visualización de experimentos, comparación de runs, registro de modelos
+"""
+    )
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 2.1 Methodological Risks
+# ══════════════════════════════════════════════════════════════════════════════
+st.subheader("2.1) Riesgos metodológicos conocidos y mitigación operativa")
+risk_table = pd.DataFrame(
+    [
+        {
+            "Riesgo": "Optimizer's curse (HPO)",
+            "Cómo se manifiesta": "El mejor trial de Optuna sobreestima mejora real.",
+            "Mitigación operativa": "Reportar dispersión por seeds + validar OOT antes de promover campeón.",
+        },
+        {
+            "Riesgo": "Sensibilidad a random_state",
+            "Cómo se manifiesta": "Pequeños cambios de seed alteran ranking entre modelos cercanos.",
+            "Mitigación operativa": "Now change random_state como regla de aprobación previa a claims.",
+        },
+        {
+            "Riesgo": "No-free-lunch",
+            "Cómo se manifiesta": "Técnica ganadora en una tarea falla al cambiar objetivo/regla de negocio.",
+            "Mitigación operativa": "Comparar familias (CatBoost/LightGBM/baselines) por contexto de decisión.",
+        },
+        {
+            "Riesgo": "Data leakage silencioso",
+            "Cómo se manifiesta": "AUC offline alto que se degrada al pasar a OOT/producción.",
+            "Mitigación operativa": "Contrato de features + split temporal + tests de consistencia en CI.",
+        },
+    ]
+)
+st.dataframe(risk_table, width="stretch", hide_index=True)
+with st.expander("Checklist operativo PASS/WARN/FAIL"):
+    st.markdown(
+        """
+- **PASS**: resultados estables por semillas, validación OOT consistente y sin señales de fuga.
+- **WARN**: mejora marginal depende de una sola semilla o de un único split.
+- **FAIL**: no replica fuera de muestra o hay evidencia de leakage/deriva no mitigada.
 """
     )
 
@@ -692,6 +744,8 @@ st.caption(
     "Cinco capas independientes conectadas por artefactos (parquets, modelos serializados, JSON contracts). "
     "Cada capa se puede reemplazar sin afectar las demás."
 )
+
+render_page_feedback("tech_stack")
 
 next_page_teaser(
     "Chat con Datos",

@@ -1,4 +1,4 @@
-"""Paper 3 draft: Mondrian conformal prediction for group-conditional coverage."""
+"""Paper 3 draft: Mondrian conformal prediction for group-partition coverage."""
 
 from __future__ import annotations
 
@@ -7,7 +7,15 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from streamlit_app.components.context_help import methodology_dialog
 from streamlit_app.components.paper_scaffold import render_phase_tracker
+from streamlit_app.components.story_shell import (
+    render_key_takeaway,
+    render_next_steps,
+    render_page_header,
+    render_section_checkpoint,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.utils import (
     download_table,
@@ -17,10 +25,28 @@ from streamlit_app.utils import (
 )
 
 st.title("📐 Paper 3 — Working Draft")
-st.caption("Mondrian Conformal Prediction for Group-Conditional Credit Risk Coverage")
+st.caption("Mondrian Conformal Prediction for Group-Partition Credit Risk Coverage")
+page_contract = get_page_contract("paper_3_mondrian")
+render_page_header(page_contract)
+render_key_takeaway(
+    "Novelty claim del draft: evaluación empírica a gran escala de Mondrian conformal en crédito, con cobertura por subgrupo y monitoreo temporal operativo."
+)
 st.warning(
     "Borrador de trabajo para revisión académica. Esta version prioriza trazabilidad de "
     "resultados y claridad metodologica para evaluacion de factibilidad científica."
+)
+methodology_dialog(
+    "Regla de foco narrativo del Paper 3",
+    """
+Este draft debe concentrarse en:
+- cobertura por subgrupo,
+- estabilidad temporal,
+- trade-off ancho vs garantía,
+- reglas de monitoreo/alerta.
+
+La conexión con optimización e IFRS9 puede mencionarse como downstream, pero no debe robar foco.
+""",
+    button_label="Ver foco narrativo (Paper 3)",
 )
 
 pipeline_summary = try_load_json("pipeline_summary", directory="data", default={})
@@ -46,35 +72,57 @@ meta_df = pd.DataFrame(
     [
         {"Campo": "Estado", "Valor": "Working Draft"},
         {"Campo": "Venue sugerido", "Valor": "COPA / UQ Workshop / ML Risk venue"},
-        {"Campo": "Pregunta", "Valor": "Como garantizar cobertura por subgrupo en riesgo crediticio con drift temporal"},
+        {
+            "Campo": "Pregunta",
+            "Valor": "Como garantizar cobertura por subgrupo en riesgo crediticio con drift temporal",
+        },
         {"Campo": "Dataset", "Valor": "Lending Club (grades A-G, split OOT)"},
-        {"Campo": "Cobertura global 90%", "Valor": format_pct(coverage_90, 2) if np.isfinite(coverage_90) else "N/D"},
-        {"Campo": "Cobertura global 95%", "Valor": format_pct(coverage_95, 2) if np.isfinite(coverage_95) else "N/D"},
-        {"Campo": "Cobertura minima por grupo", "Valor": format_pct(min_group_cov, 2) if np.isfinite(min_group_cov) else "N/D"},
+        {
+            "Campo": "Cobertura global 90%",
+            "Valor": format_pct(coverage_90, 2) if np.isfinite(coverage_90) else "N/D",
+        },
+        {
+            "Campo": "Cobertura global 95%",
+            "Valor": format_pct(coverage_95, 2) if np.isfinite(coverage_95) else "N/D",
+        },
+        {
+            "Campo": "Cobertura minima por grupo",
+            "Valor": format_pct(min_group_cov, 2) if np.isfinite(min_group_cov) else "N/D",
+        },
     ]
 )
-st.dataframe(meta_df, use_container_width=True, hide_index=True)
+st.dataframe(meta_df, width="stretch", hide_index=True)
 
 k1, k2, k3, k4 = st.columns(4)
 k1.metric("Cobertura 90%", format_pct(coverage_90, 2) if np.isfinite(coverage_90) else "N/D")
 k2.metric("Cobertura 95%", format_pct(coverage_95, 2) if np.isfinite(coverage_95) else "N/D")
-k3.metric("Min Coverage Grupo", format_pct(min_group_cov, 2) if np.isfinite(min_group_cov) else "N/D")
+k3.metric(
+    "Min Coverage Grupo", format_pct(min_group_cov, 2) if np.isfinite(min_group_cov) else "N/D"
+)
 k4.metric("Policy Checks", f"{checks_passed}/{checks_total}")
 
 st.markdown("## 1) Abstract (Draft)")
 st.markdown(
     f"""
 Aplicamos Mondrian Conformal Prediction para construir intervalos de riesgo con garantia
-condicional por grupo (loan grades A-G) en una ventana out-of-time. El sistema alcanza
-cobertura global de {format_pct(coverage_90, 2) if np.isfinite(coverage_90) else 'N/D'} al
-nivel nominal 90% y {format_pct(coverage_95, 2) if np.isfinite(coverage_95) else 'N/D'}
+por particion de grupo (loan grades A-G) en una ventana out-of-time. El sistema alcanza
+cobertura global de {format_pct(coverage_90, 2) if np.isfinite(coverage_90) else "N/D"} al
+nivel nominal 90% y {format_pct(coverage_95, 2) if np.isfinite(coverage_95) else "N/D"}
 al nivel 95%, con cobertura minima por grupo de
-{format_pct(min_group_cov, 2) if np.isfinite(min_group_cov) else 'N/D'}.
+{format_pct(min_group_cov, 2) if np.isfinite(min_group_cov) else "N/D"}.
 
 Ademas del promedio global, presentamos monitoreo mensual de cobertura y alertas operativas
 para detectar desviaciones de exchangeability. Comparamos variantes conformales y cuantificamos
 el trade-off entre eficiencia (ancho) y garantia por subgrupo.
 """
+)
+render_section_checkpoint(
+    "Checkpoint de framing (Paper 3)",
+    [
+        "Claim principal: cobertura útil por subgrupo (grade) en setting crediticio real.",
+        "Aporte operativo: monitoreo mensual y alertas bajo drift temporal.",
+        "Trade-off central: ancho/eficiencia vs garantías por subgrupo.",
+    ],
 )
 
 st.markdown("## 2) Introduction")
@@ -85,7 +133,7 @@ subgrupos con distinto perfil de riesgo. Mondrian conformal corrige este problem
 calibraciones separadas por grupo, pero introduce trade-offs de varianza cuando algunos grupos
 son pequenos.
 
-Este draft se enfoca en: (i) cobertura condicional por grade, (ii) estabilidad temporal de
+Este draft se enfoca en: (i) cobertura por particion por grade, (ii) estabilidad temporal de
 cobertura en OOT, y (iii) comparacion sistematica contra variantes split/global para tomar una
 decision metodologica defendible frente a un revisor experto.
 """
@@ -94,21 +142,29 @@ decision metodologica defendible frente a un revisor experto.
 st.markdown("## 3) Related Work (Resumen para borrador)")
 related = pd.DataFrame(
     [
-        ["Vovk, Gammerman & Shafer (2005)", "Conformal foundations", "Garantias de cobertura en muestra finita"],
+        [
+            "Vovk, Gammerman & Shafer (2005)",
+            "Conformal foundations",
+            "Garantias de cobertura en muestra finita",
+        ],
         ["Ding et al. (2023)", "Class-conditional CP", "Base para garantia por subgrupo"],
         ["Gibbs & Candes (2021)", "Adaptive conformal", "Relevante para drift temporal"],
-        ["Plassier et al. (2024)", "Approx conditional validity", "Puente entre validez marginal y condicional"],
+        [
+            "Plassier et al. (2024)",
+            "Approx conditional validity",
+            "Puente entre validez marginal y condicional",
+        ],
     ],
     columns=["Referencia", "Eje", "Relevancia para este draft"],
 )
-st.dataframe(related, use_container_width=True, hide_index=True)
+st.dataframe(related, width="stretch", hide_index=True)
 
 st.markdown("## 4) Data and Experimental Protocol")
 st.markdown(
     """
 - Split temporal OOT fijo y monitoreo mensual por cohorte.
 - Calibracion Mondrian por grade con alphas operativos (90%/95%).
-- Evaluacion global + group-conditional + backtest mensual + alertas.
+- Evaluacion global + por particion + backtest mensual + alertas.
 - Benchmark contra variantes globales y Mondrian alternativo.
 """
 )
@@ -134,10 +190,17 @@ st.caption("Equation 3. Regla de alerta mensual por mes `m` y grupo `g`.")
 
 st.markdown("## 6) Results")
 
-if not group_metrics.empty and {"group", "coverage_90", "coverage_95"}.issubset(group_metrics.columns):
+if not group_metrics.empty and {"group", "coverage_90", "coverage_95"}.issubset(
+    group_metrics.columns
+):
     gm_plot = group_metrics[["group", "coverage_90", "coverage_95"]].copy().sort_values("group")
     fig1 = px.bar(
-        gm_plot.melt(id_vars=["group"], value_vars=["coverage_90", "coverage_95"], var_name="metric", value_name="coverage"),
+        gm_plot.melt(
+            id_vars=["group"],
+            value_vars=["coverage_90", "coverage_95"],
+            var_name="metric",
+            value_name="coverage",
+        ),
         x="group",
         y="coverage",
         color="metric",
@@ -148,8 +211,16 @@ if not group_metrics.empty and {"group", "coverage_90", "coverage_95"}.issubset(
     )
     fig1.add_hline(y=0.90, line_dash="dash", line_color="orange")
     fig1.add_hline(y=0.95, line_dash="dot", line_color="green")
-    st.plotly_chart(fig1, use_container_width=True)
+    st.plotly_chart(fig1, width="stretch")
     st.caption("Figure 1. Cobertura por grade con lineas de referencia nominales.")
+    if "n" in group_metrics.columns:
+        low_n = group_metrics[group_metrics["n"] < 1000]["group"].tolist()
+        if low_n:
+            st.info(
+                "Nota metodologica: grupos con n bajo "
+                f"({', '.join(str(g) for g in low_n)}) presentan mayor varianza de cobertura; "
+                "la lectura debe hacerse junto con ancho e intervalo de confianza de cobertura."
+            )
 
 if not group_metrics.empty and {"group", "avg_width_90", "n"}.issubset(group_metrics.columns):
     width_plot = group_metrics[["group", "avg_width_90", "n"]].copy().sort_values("group")
@@ -162,7 +233,7 @@ if not group_metrics.empty and {"group", "avg_width_90", "n"}.issubset(group_met
         labels={"group": "Grade", "avg_width_90": "Average width", "n": "N by grade"},
         template=PLOTLY_TEMPLATE,
     )
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width="stretch")
     st.caption("Figure 2. Eficiencia de intervalos por grade (ancho medio al 90%).")
 
 if not monthly.empty and {"month", "coverage_90", "coverage_95"}.issubset(monthly.columns):
@@ -178,10 +249,12 @@ if not monthly.empty and {"month", "coverage_90", "coverage_95"}.issubset(monthl
     )
     fig3.add_hline(y=0.90, line_dash="dash", line_color="orange")
     fig3.add_hline(y=0.95, line_dash="dot", line_color="green")
-    st.plotly_chart(fig3, use_container_width=True)
+    st.plotly_chart(fig3, width="stretch")
     st.caption("Figure 3. Trayectoria temporal de cobertura en OOT.")
 
-if not benchmark.empty and {"variant", "avg_width", "min_group_coverage", "coverage"}.issubset(benchmark.columns):
+if not benchmark.empty and {"variant", "avg_width", "min_group_coverage", "coverage"}.issubset(
+    benchmark.columns
+):
     fig4 = px.scatter(
         benchmark,
         x="avg_width",
@@ -192,7 +265,7 @@ if not benchmark.empty and {"variant", "avg_width", "min_group_coverage", "cover
         title="Figure 4. Variant Trade-off (Efficiency vs Min Group Coverage)",
         template=PLOTLY_TEMPLATE,
     )
-    st.plotly_chart(fig4, use_container_width=True)
+    st.plotly_chart(fig4, width="stretch")
     st.caption("Figure 4. Trade-off entre eficiencia y cobertura minima por grupo.")
 
 if not monthly_grade.empty and {"month", "grade", "gap_90"}.issubset(monthly_grade.columns):
@@ -205,7 +278,7 @@ if not monthly_grade.empty and {"month", "grade", "gap_90"}.issubset(monthly_gra
         text_auto=".3f",
         template=PLOTLY_TEMPLATE,
     )
-    st.plotly_chart(fig5, use_container_width=True)
+    st.plotly_chart(fig5, width="stretch")
     st.caption("Figure 5. Mapa de gap mensual de cobertura al 90% por grade.")
 
 st.markdown("### Tablas principales")
@@ -215,7 +288,7 @@ with col_t1:
     if group_metrics.empty:
         st.info("No se encontro `conformal_group_metrics_mondrian.parquet`.")
     else:
-        st.dataframe(group_metrics, use_container_width=True, hide_index=True)
+        st.dataframe(group_metrics, width="stretch", hide_index=True)
         download_table(group_metrics, "paper3_table1_group_metrics.csv")
 
 with col_t2:
@@ -223,7 +296,7 @@ with col_t2:
     if monthly.empty:
         st.info("No se encontro `conformal_backtest_monthly.parquet`.")
     else:
-        st.dataframe(monthly, use_container_width=True, hide_index=True)
+        st.dataframe(monthly, width="stretch", hide_index=True)
         download_table(monthly, "paper3_table2_monthly_backtest.csv")
 
 with st.expander("Appendix Tables"):
@@ -231,28 +304,28 @@ with st.expander("Appendix Tables"):
     if monthly_grade.empty:
         st.info("No se encontro `conformal_backtest_monthly_grade.parquet`.")
     else:
-        st.dataframe(monthly_grade, use_container_width=True, hide_index=True)
+        st.dataframe(monthly_grade, width="stretch", hide_index=True)
         download_table(monthly_grade, "paper3_tableA1_monthly_grade.csv")
 
     st.markdown("**Table A2. Operational Alerts**")
     if alerts.empty:
         st.info("No se encontro `conformal_backtest_alerts.parquet`.")
     else:
-        st.dataframe(alerts, use_container_width=True, hide_index=True)
+        st.dataframe(alerts, width="stretch", hide_index=True)
         download_table(alerts, "paper3_tableA2_alerts.csv")
 
     st.markdown("**Table A3. Variant Benchmark (Global)**")
     if benchmark.empty:
         st.info("No se encontro `conformal_variant_benchmark.parquet`.")
     else:
-        st.dataframe(benchmark, use_container_width=True, hide_index=True)
+        st.dataframe(benchmark, width="stretch", hide_index=True)
         download_table(benchmark, "paper3_tableA3_variant_benchmark.csv")
 
     st.markdown("**Table A4. Variant Benchmark by Group**")
     if benchmark_by_group.empty:
         st.info("No se encontro `conformal_variant_benchmark_by_group.parquet`.")
     else:
-        st.dataframe(benchmark_by_group, use_container_width=True, hide_index=True)
+        st.dataframe(benchmark_by_group, width="stretch", hide_index=True)
         download_table(benchmark_by_group, "paper3_tableA4_benchmark_by_group.csv")
 
 st.markdown("## 7) Discussion")
@@ -324,7 +397,7 @@ render_phase_tracker(
 st.markdown("### Puntos a Revisar / Complementar")
 st.markdown(
     """
-- **Section 1 (Abstract)**: ajustar claim de "group-conditional" segun lectura del profesor.
+- **Section 1 (Abstract)**: mantener wording de cobertura por particion, evitando sobreclaims condicionales.
 - **Section 2 (Introduction)**: reforzar caso de uso operativo en riesgo crediticio real.
 - **Section 3 (Related Work / Table)**: decidir baseline adicional (CQR o ACP) como comparador principal.
 - **Section 5 (Methods / Eq. 1)**: validar tratamiento de truncamiento [0,1] en intervalos de PD.
@@ -336,4 +409,18 @@ st.markdown(
 - **Figure 5**: revisar escala de color para enfatizar episodios criticos de under-coverage.
 - **Table 1 / Table 2 / Table A1-A4**: separar claramente tablas core vs apendice tecnico.
 """
+)
+render_next_steps(
+    [
+        (
+            "Panorama de Investigación",
+            "Registro maestro de referencias y posicionamiento de Mondrian CP.",
+            "pages/research_landscape.py",
+        ),
+        (
+            "Buenas Prácticas y Herramientas",
+            "Checklist de revisión y estandarización de figuras/tablas.",
+            "pages/research_best_practices.py",
+        ),
+    ]
 )

@@ -17,6 +17,13 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from streamlit_app.components.narrative import next_page_teaser, storytelling_intro
+from streamlit_app.components.story_shell import (
+    render_caveats,
+    render_key_takeaway,
+    render_page_feedback,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.utils import get_notebook_image_path, load_parquet, try_load_parquet
 
@@ -24,6 +31,11 @@ st.title("📈 Panorama Temporal")
 st.caption(
     "Modelos estadísticos y ML para proyección de tasa de default, "
     "con bandas de incertidumbre y escenarios IFRS9."
+)
+page_contract = get_page_contract("time_series_outlook")
+render_page_header(page_contract)
+render_key_takeaway(
+    "El forecast aporta contexto de régimen para planeación e IFRS9; no sustituye el score individual ni la lectura de incertidumbre por préstamo."
 )
 storytelling_intro(
     page_goal=(
@@ -70,10 +82,18 @@ if scenarios.empty and not forecasts.empty:
             {
                 "month": forecasts["ds"],
                 "point_forecast": forecasts[baseline_model],
-                "optimistic_90": forecasts[lo90] if lo90 in forecasts.columns else forecasts[baseline_model],
-                "adverse_90": forecasts[hi90] if hi90 in forecasts.columns else forecasts[baseline_model],
-                "optimistic_95": forecasts[lo95] if lo95 in forecasts.columns else forecasts[baseline_model],
-                "adverse_95": forecasts[hi95] if hi95 in forecasts.columns else forecasts[baseline_model],
+                "optimistic_90": forecasts[lo90]
+                if lo90 in forecasts.columns
+                else forecasts[baseline_model],
+                "adverse_90": forecasts[hi90]
+                if hi90 in forecasts.columns
+                else forecasts[baseline_model],
+                "optimistic_95": forecasts[lo95]
+                if lo95 in forecasts.columns
+                else forecasts[baseline_model],
+                "adverse_95": forecasts[hi95]
+                if hi95 in forecasts.columns
+                else forecasts[baseline_model],
             }
         )
 
@@ -114,7 +134,7 @@ st.dataframe(
             },
         ]
     ),
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
 )
 
@@ -159,7 +179,15 @@ for level, color in [("90", "rgba(0,212,170,0.22)"), ("95", "rgba(255,217,61,0.1
     lo = f"{selected_model}-lo-{level}"
     hi = f"{selected_model}-hi-{level}"
     if lo in forecasts.columns and hi in forecasts.columns:
-        fig.add_trace(go.Scatter(x=forecasts["ds"], y=forecasts[hi], mode="lines", line={"width": 0}, showlegend=False))
+        fig.add_trace(
+            go.Scatter(
+                x=forecasts["ds"],
+                y=forecasts[hi],
+                mode="lines",
+                line={"width": 0},
+                showlegend=False,
+            )
+        )
         fig.add_trace(
             go.Scatter(
                 x=forecasts["ds"],
@@ -182,7 +210,7 @@ fig.update_layout(
     yaxis={"tickformat": ".1%"},
     height=470,
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 st.caption(
     "Propósito: proyectar default futuro. Insight: el modelo seleccionable mantiene trayectoria coherente con histórico. "
     "Uso práctico: alimentar escenarios de provisión y planeación de riesgo."
@@ -204,7 +232,9 @@ else:
             )
         )
         fig.add_trace(
-            go.Scatter(x=scenarios["month"], y=scenarios["adverse_90"], mode="lines", name="Adverso 90%")
+            go.Scatter(
+                x=scenarios["month"], y=scenarios["adverse_90"], mode="lines", name="Adverso 90%"
+            )
         )
         fig.add_trace(
             go.Scatter(
@@ -222,7 +252,7 @@ else:
             yaxis={"tickformat": ".1%"},
             height=390,
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         st.caption(
             "Propósito: visualizar rango optimista/adverso frente al punto central. "
             "Insight: la incertidumbre no es simétrica en todos los meses. "
@@ -252,7 +282,7 @@ else:
         )
         fig.update_layout(**PLOTLY_TEMPLATE["layout"])
         fig.update_layout(yaxis={"tickformat": ".1%"}, height=390)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         st.caption(
             "Propósito: resumir dispersión por escenario. Insight: escenarios adversos desplazan sistemáticamente la tasa esperada. "
             "Uso práctico: stress testing de provisiones y capital."
@@ -269,7 +299,9 @@ pred_cols = [
     and not c.endswith("-hi-95")
 ]
 if cv_stats.empty or "y" not in cv_stats.columns or not pred_cols:
-    st.info("No hay `ts_cv_stats.parquet` utilizable; se omite comparación MAE de validación temporal.")
+    st.info(
+        "No hay `ts_cv_stats.parquet` utilizable; se omite comparación MAE de validación temporal."
+    )
 else:
     scores = []
     for col in pred_cols:
@@ -287,7 +319,7 @@ else:
         color_continuous_scale="Blues",
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=360, coloraxis_showscale=False)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: comparar error fuera de muestra temporal. Insight: el ranking de modelos no siempre coincide en MAE y RMSE. "
         "Uso práctico: elegir modelo según criterio de negocio (error medio vs penalización de errores grandes)."
@@ -339,8 +371,16 @@ if img.exists():
     st.image(
         str(img),
         caption="Notebook 05: comparación de modelos por métricas de validación temporal.",
-        use_container_width=True,
+        width="stretch",
     )
+
+render_caveats(
+    [
+        "La cobertura de bandas conformales en series temporales puede degradarse si cambia el régimen entre calibración y evaluación.",
+        "El pronóstico agregado debe complementarse con análisis por segmento y monitoreo del mix de portafolio.",
+    ]
+)
+render_page_feedback("time_series_outlook")
 
 next_page_teaser(
     "Análisis de Supervivencia",

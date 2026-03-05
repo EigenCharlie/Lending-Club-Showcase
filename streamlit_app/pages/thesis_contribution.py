@@ -7,8 +7,15 @@ import plotly.graph_objects as go
 import streamlit as st
 from streamlit_mermaid import st_mermaid
 
+from streamlit_app.components.context_help import methodology_dialog
 from streamlit_app.components.metric_cards import kpi_row
 from streamlit_app.components.narrative import next_page_teaser
+from streamlit_app.components.story_shell import (
+    render_caveats,
+    render_key_takeaway,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.utils import format_pct, load_json, load_parquet, load_runtime_status
 
@@ -16,6 +23,27 @@ st.title("🎯 Contribución de Tesis")
 st.caption(
     "Predict-then-Optimize con Conformal Prediction: decisiones de portafolio "
     "bajo incertidumbre cuantificada con garantías matemáticas."
+)
+page_contract = get_page_contract("thesis_contribution")
+render_page_header(page_contract)
+render_key_takeaway(
+    "Esta página articula el claim de tesis completo; debe leerse como puente entre la narrativa aplicada del dashboard y la defensa académica de novelty."
+)
+methodology_dialog(
+    "Cómo leer la contribución de tesis (modo experto)",
+    """
+Orden sugerido:
+1. Pregunta de investigación y claim.
+2. Dataset como plataforma de convergencia metodológica.
+3. Pipeline conceptual (calibración -> conformal -> robust optimization).
+4. KPIs y trade-off de robustez.
+5. Conexión a IFRS9 y reproducibilidad.
+""",
+    button_label="Ver mapa de lectura de la contribución",
+)
+st.caption(
+    "Lectura de claims: las afirmaciones metodológicas se interpretan contra evidencia ejecutable "
+    "del snapshot canónico actual. Fairness conformal avanzado se discute en `research_landscape.py`."
 )
 
 comparison = load_json("model_comparison")
@@ -147,7 +175,7 @@ st.markdown(
 **Cada etapa tiene un propósito preciso:**
 1. **CatBoost PD**: modelo de clasificación robusto con manejo nativo de categorías y nulos.
 2. **Calibración ({best_calibration})**: convierte scores en probabilidades verdaderas
-   (ECE test actual={final_metrics.get('ece', 0):.4f}).
+   (ECE test actual={final_metrics.get("ece", 0):.4f}).
 3. **Conformal Prediction Mondrian**: genera intervalos `[PD_low, PD_high]` con garantía de
    cobertura empírica por grupo (grade), sin supuestos distribucionales.
 4. **Box Uncertainty Sets**: encapsula los intervalos como conjuntos de incertidumbre para optimización.
@@ -163,10 +191,10 @@ st.subheader("2) ¿Por qué calibrar antes de cuantificar incertidumbre?")
 
 st.markdown(
     """
-Muchos modelos de ML producen **scores**, no **probabilidades**. Un CatBoost puede decir
-"este préstamo tiene score 0.12", pero eso no significa que exactamente el 12% de los
-préstamos con ese score incumplirán. La **calibración** corrige ese sesgo para que las
-salidas del modelo reflejen frecuencias reales.
+Muchos modelos de ML entregan probabilidades que pueden estar **mal calibradas**.
+Eso significa que el valor numérico no coincide con la frecuencia real observada.
+La **calibración** ajusta ese sesgo para que la probabilidad predicha se acerque a la
+frecuencia de incumplimiento en segmentos de riesgo comparables.
 """
 )
 
@@ -176,11 +204,11 @@ with col_cal_left:
         """
 #### Sin calibración
 ```
-Score modelo = 0.12
-Realidad     = 8% defaults
+Probabilidad estimada     = 12.0%
+Frecuencia real (mismo bin) = 8.0%
 ```
 El modelo sobreestima el riesgo en 4pp.
-Si usamos 0.12 en el optimizador, seremos
+Si usamos 12.0% en el optimizador, seremos
 innecesariamente conservadores.
 """
     )
@@ -189,11 +217,11 @@ with col_cal_right:
         f"""
 #### Con calibración {best_calibration}
 ```
-Score modelo  = 0.12
-PD calibrada  = 0.082
-Realidad      = 8% defaults
+Probabilidad estimada     = 12.0%
+Probabilidad calibrada    = 8.2%
+Frecuencia real (mismo bin) = 8.0%
 ```
-Ahora la probabilidad refleja la realidad.
+Ahora la probabilidad calibrada refleja mejor la realidad.
 El optimizador trabaja con datos honestos.
 """
     )
@@ -335,7 +363,7 @@ comparison_data = pd.DataFrame(
         },
     ]
 )
-st.dataframe(comparison_data, use_container_width=True, hide_index=True)
+st.dataframe(comparison_data, width="stretch", hide_index=True)
 
 st.success(
     "**Ventaja clave**: Conformal Prediction es el único método que ofrece garantías de cobertura "
@@ -386,11 +414,6 @@ st.subheader("4) Resultados de impacto")
 policy = load_json("conformal_policy_status", directory="models")
 robust = load_parquet("portfolio_robustness_summary")
 ifrs9 = load_parquet("ifrs9_scenario_summary")
-checks_passed = int(policy.get("checks_passed", 0))
-checks_total = int(policy.get("checks_total", 0))
-policy_gate_text = (
-    f"{checks_passed}/{checks_total} checks" if checks_total > 0 else "checks no disponibles"
-)
 runtime_status = load_runtime_status()
 test_suite_total = int(runtime_status.get("test_suite_total", 0) or 0)
 test_suite_label = str(test_suite_total) if test_suite_total > 0 else "N/D"
@@ -430,8 +453,8 @@ kpi_row(
     [
         {"label": "Cobertura 90% (Mondrian)", "value": format_pct(policy.get("coverage_90", 0))},
         {
-            "label": "Policy Gate",
-            "value": policy_gate_text,
+            "label": "Ancho promedio 90%",
+            "value": f"{float(policy.get('avg_width_90', 0.0)):.3f}",
         },
         {"label": "Retorno robusto (tol=10%)", "value": f"${robust_return:,.0f}"},
         {"label": "Precio de robustez", "value": f"${price_of_robustness:,.0f}"},
@@ -446,7 +469,7 @@ st.markdown(
 **Lectura de los KPIs:**
 - **Cobertura 90%**: en el snapshot canónico actual, la cobertura observada es
   **{format_pct(policy.get("coverage_90", 0))}** frente a meta de 90%.
-- **Policy Gate ({policy_gate_text})**: validaciones formales de calidad del sistema de intervalos.
+- **Ancho promedio 90%**: resume el nivel de conservadurismo de los intervalos conformales.
 - **Precio de robustez**: la diferencia de retorno entre asumir PD exacta vs usar el peor caso
   conformal. Es el costo de la protección.
 - **ECL baseline vs severo**: cómo cambian las provisiones regulatorias bajo estrés.
@@ -487,7 +510,7 @@ if not robust.empty and tol_col in robust.columns:
         yaxis_title="Retorno esperado ($)",
         height=420,
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "La brecha entre las curvas es el **precio de robustez**: lo que cuesta protegerse "
         "contra el peor caso plausible. Una brecha pequeña indica que la protección es barata."
@@ -515,7 +538,7 @@ Los intervalos conformal no solo alimentan la optimización — también mejoran
 | **ECL por rango** | Provisionar con `PD_high` en vez de `PD_point` para lectura prudencial |
 | **SICR signal** | Ancho del intervalo (`PD_high - PD_point`) como señal adicional de deterioro significativo |
 | **Stress testing** | Escenarios con multiplicadores derivados de bandas de pronóstico temporal |
-| **Gobernanza** | Política conformal ({policy_gate_text}) documenta calidad de incertidumbre ante auditoría |
+| **Gobernanza** | Monitoreo de cobertura y backtesting temporal documenta calidad de incertidumbre ante auditoría |
 """
 )
 
@@ -543,10 +566,16 @@ uv run streamlit run streamlit_app/app.py
 
 st.markdown(
     f"""
-**Stack tecnológico**: Python 3.11 · CatBoost · MAPIE 1.3 · Pyomo + HiGHS · DuckDB · dbt · Feast · Streamlit
+**Stack tecnológico**: Python 3.12 · CatBoost · MAPIE 1.3 · Pyomo + HiGHS · DuckDB · dbt · Feast · Streamlit
 
 **{test_suite_label} tests** validan datos, features, modelos, conformal, IFRS9, optimización, MLflow, Streamlit e integración end-to-end.
 """
+)
+render_caveats(
+    [
+        "El claim de tesis integra múltiples módulos; la fortaleza depende de la calidad de cada componente y su alineación temporal.",
+        "La generalización a otras carteras requiere recalibración y adaptación institucional.",
+    ]
 )
 
 next_page_teaser(

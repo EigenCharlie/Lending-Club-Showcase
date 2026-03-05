@@ -18,8 +18,11 @@ DATA_DIR = PROJECT_ROOT / "data" / "processed"
 MODEL_DIR = PROJECT_ROOT / "models"
 DUCKDB_PATH = PROJECT_ROOT / "data" / "lending_club.duckdb"
 DBT_PROJECT_DIR = PROJECT_ROOT / "dbt_project"
-NOTEBOOK_IMAGE_DIR = PROJECT_ROOT / "reports" / "notebook_images"
+REPORTS_DIR = PROJECT_ROOT / "reports"
+DVC_REPORTS_DIR = REPORTS_DIR / "dvc"
+NOTEBOOK_IMAGE_DIR = REPORTS_DIR / "notebook_images"
 NOTEBOOK_IMAGE_MANIFEST = NOTEBOOK_IMAGE_DIR / "manifest.json"
+BASELINE_REGISTRY_PATH = PROJECT_ROOT / "configs" / "baselines" / "core_official_baseline.json"
 
 
 @st.cache_data(ttl=1800, max_entries=24)
@@ -70,6 +73,132 @@ def try_load_json(name: str, directory: str = "data", default: dict | None = Non
         return dict(default or {})
 
 
+@st.cache_data(ttl=300, max_entries=16)
+def try_load_report_parquet(subdir: str, name: str) -> pd.DataFrame:
+    """Load parquet from reports/<subdir>/<name>.parquet."""
+    path = REPORTS_DIR / subdir / f"{name}.parquet"
+    if not path.exists():
+        return pd.DataFrame()
+    try:
+        return pd.read_parquet(path)
+    except Exception:
+        return pd.DataFrame()
+
+
+@st.cache_data(ttl=300, max_entries=16)
+def try_load_report_json(subdir: str, name: str) -> dict:
+    """Load JSON from reports/<subdir>/<name>.json."""
+    path = REPORTS_DIR / subdir / f"{name}.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text())
+    except Exception:
+        return {}
+
+
+@st.cache_data(ttl=300, max_entries=4)
+def load_dvc_metrics_summary() -> dict[str, float]:
+    """Load canonical DVC metrics summary exported under reports/dvc/."""
+    path = DVC_REPORTS_DIR / "metrics_summary.json"
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    source = data.get("metrics", data) if isinstance(data, dict) else {}
+    out: dict[str, float] = {}
+    for key, value in source.items():
+        try:
+            out[str(key)] = float(value)
+        except Exception:
+            continue
+    return out
+
+
+@st.cache_data(ttl=300, max_entries=4)
+def load_dvc_conformal_backtest() -> pd.DataFrame:
+    """Load canonical conformal coverage backtest exported for DVC plots."""
+    path = DVC_REPORTS_DIR / "conformal_coverage_backtest.csv"
+    if not path.exists():
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path)
+        if "month" in df.columns:
+            df["month"] = pd.to_datetime(df["month"], errors="coerce")
+        return df
+    except Exception:
+        return pd.DataFrame()
+
+
+@st.cache_data(ttl=300, max_entries=4)
+def load_dvc_robustness_frontier() -> pd.DataFrame:
+    """Load canonical robustness frontier exported for DVC plots."""
+    path = DVC_REPORTS_DIR / "robustness_frontier.csv"
+    if not path.exists():
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path)
+    except Exception:
+        return pd.DataFrame()
+
+
+def safe_metric_get(
+    metrics: dict[str, float] | None, key: str, default: float | None = None
+) -> float | None:
+    """Safely fetch a metric key from DVC summary."""
+    if not metrics:
+        return default
+    value = metrics.get(key, default)
+    try:
+        return float(value) if value is not None else default
+    except Exception:
+        return default
+
+
+@st.cache_data(ttl=300, max_entries=4)
+def load_official_baseline_registry() -> dict:
+    """Load official core baseline registry from configs/baselines."""
+    if not BASELINE_REGISTRY_PATH.exists():
+        return {}
+    try:
+        return json.loads(BASELINE_REGISTRY_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def evaluate_run_tag_coherence(expected_run_tag: str | None, artifacts: dict[str, dict]) -> dict:
+    """Check run_tag coherence across selected status artifacts."""
+    expected = str(expected_run_tag or "").strip()
+    observed: dict[str, str] = {}
+    missing: list[str] = []
+    mismatched: list[str] = []
+    for name, payload in artifacts.items():
+        if not isinstance(payload, dict):
+            missing.append(name)
+            continue
+        tag = str(payload.get("run_tag", "")).strip()
+        if not tag:
+            missing.append(name)
+            continue
+        observed[name] = tag
+        if expected and tag != expected:
+            mismatched.append(name)
+    unique_tags = sorted(set(observed.values()))
+    coherent = bool(observed) and not missing and not mismatched and len(unique_tags) == 1
+    if expected and not coherent:
+        coherent = False
+    return {
+        "expected_run_tag": expected or None,
+        "observed_run_tags": unique_tags,
+        "observed_by_artifact": observed,
+        "missing_run_tag_artifacts": sorted(missing),
+        "mismatched_artifacts": sorted(mismatched),
+        "coherent": coherent,
+    }
+
+
 def _collect_test_inventory() -> tuple[int, list[dict[str, int | str]]]:
     """Best-effort collected test inventory using pytest node IDs."""
     tests_dir = PROJECT_ROOT / "tests"
@@ -107,17 +236,20 @@ def load_runtime_status() -> dict:
     """Load runtime status snapshot with resilient fallbacks."""
     status = try_load_json("runtime_status", directory="data", default={})
     # Always prefer filesystem truth for page count to avoid stale snapshots.
-    status["streamlit_pages_total"] = len(list((PROJECT_ROOT / "streamlit_app" / "pages").glob("*.py")))
-    test_total = int(status.get("test_suite_total", 0) or 0)
-    breakdown = status.get("test_breakdown", [])
-    if not isinstance(breakdown, list):
-        breakdown = []
-    if test_total <= 0 or not breakdown:
-        collected_total, collected_breakdown = _collect_test_inventory()
-        if test_total <= 0:
-            status["test_suite_total"] = collected_total
-        if not breakdown:
-            status["test_breakdown"] = collected_breakdown
+    status["streamlit_pages_total"] = len(
+        list((PROJECT_ROOT / "streamlit_app" / "pages").glob("*.py"))
+    )
+    collected_total, collected_breakdown = _collect_test_inventory()
+    if collected_total > 0:
+        status["test_suite_total"] = int(collected_total)
+        status["test_breakdown"] = collected_breakdown
+    else:
+        test_total = int(status.get("test_suite_total", 0) or 0)
+        breakdown = status.get("test_breakdown", [])
+        if not isinstance(breakdown, list):
+            breakdown = []
+        status["test_suite_total"] = test_total
+        status["test_breakdown"] = breakdown
     return status
 
 

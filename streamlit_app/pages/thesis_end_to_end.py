@@ -17,6 +17,13 @@ import streamlit as st
 from streamlit_app.components.audience_toggle import audience_selector
 from streamlit_app.components.metric_cards import kpi_row
 from streamlit_app.components.narrative import narrative_block, next_page_teaser
+from streamlit_app.components.story_shell import (
+    render_key_takeaway,
+    render_page_feedback,
+    render_page_header,
+    render_section_checkpoint,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.utils import (
     format_number,
@@ -30,6 +37,11 @@ st.title("🧭 Visión End-to-End")
 st.caption(
     "Motivación, base metodológica, implementación en Lending Club y lectura de resultados "
     "con interpretación técnica y de negocio."
+)
+page_contract = get_page_contract("thesis_end_to_end")
+render_page_header(page_contract)
+render_key_takeaway(
+    "Esta página integra el hilo completo: el valor del proyecto aparece cuando lees cómo cada módulo alimenta decisiones downstream, no cuando miras cada técnica aislada."
 )
 st.markdown(
     """
@@ -74,8 +86,14 @@ kpi_row(
         {"label": "AUC OOT", "value": f"{final_metrics.get('auc_roc', 0):.4f}"},
         {"label": "ECE", "value": f"{final_metrics.get('ece', 0):.4f}"},
         {"label": "Cobertura 90%", "value": format_pct(policy.get("coverage_90", 0))},
-        {"label": "Retorno robusto", "value": format_number(pipeline.get("robust_return", 0), prefix="$")},
-        {"label": "Valor causal neto", "value": format_number(causal_rule.get("total_net_value", 0), prefix="$")},
+        {
+            "label": "Retorno robusto",
+            "value": format_number(pipeline.get("robust_return", 0), prefix="$"),
+        },
+        {
+            "label": "Valor causal neto",
+            "value": format_number(causal_rule.get("total_net_value", 0), prefix="$"),
+        },
     ],
     n_cols=3,
 )
@@ -116,7 +134,9 @@ Formulación simplificada del bloque robusto:
 """
     )
     st.latex(r"\max_x \sum_i x_i \cdot L_i \cdot (r_i - LGD_i \cdot PD_i)")
-    st.latex(r"\text{s.a. } \sum_i x_i L_i \le B,\quad PD_i \in [PD_{low,i},PD_{high,i}],\quad \text{restricciones de riesgo}")
+    st.latex(
+        r"\text{s.a. } \sum_i x_i L_i \le B,\quad PD_i \in [PD_{low,i},PD_{high,i}],\quad \text{restricciones de riesgo}"
+    )
     st.markdown(
         """
 En modo robusto se penaliza retorno esperado para ganar estabilidad ante error de modelo.
@@ -191,7 +211,7 @@ Eso deja tres vacíos:
             },
         ]
     )
-    st.dataframe(literature, use_container_width=True, hide_index=True)
+    st.dataframe(literature, width="stretch", hide_index=True)
 
 with tab2:
     st.markdown("### Contrato del pipeline y artefactos")
@@ -234,7 +254,7 @@ with tab2:
             },
         ]
     )
-    st.dataframe(flow, use_container_width=True, hide_index=True)
+    st.dataframe(flow, width="stretch", hide_index=True)
 
     st.markdown(
         """
@@ -280,7 +300,7 @@ digraph Pipeline {
     gov -> app;
 }
 """,
-        use_container_width=True,
+        width="stretch",
     )
     st.caption(
         "Propósito: mostrar acoplamiento de módulos. Insight: la calidad de decisión depende de la calidad del score, "
@@ -332,11 +352,15 @@ with tab3:
             },
         ]
     )
-    st.dataframe(interpretation, use_container_width=True, hide_index=True)
+    st.dataframe(interpretation, width="stretch", hide_index=True)
 
     compare = pd.DataFrame(
         [
-            {"modo": "No robusto", "retorno": pipeline.get("nonrobust_return", 0.0), "tipo": "Retorno"},
+            {
+                "modo": "No robusto",
+                "retorno": pipeline.get("nonrobust_return", 0.0),
+                "tipo": "Retorno",
+            },
             {"modo": "Robusto", "retorno": pipeline.get("robust_return", 0.0), "tipo": "Retorno"},
             {"modo": "Baseline IFRS9", "retorno": baseline, "tipo": "ECL"},
             {"modo": "Severe IFRS9", "retorno": severe, "tipo": "ECL"},
@@ -352,7 +376,7 @@ with tab3:
         labels={"modo": "", "retorno": "USD"},
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=420)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: contrastar magnitudes de retorno y provisión en una misma vista. Insight: optimizar cartera sin "
         "leer simultáneamente el costo IFRS9 puede generar decisiones parciales."
@@ -369,7 +393,7 @@ with tab3:
                 "price_of_robustness_pct",
             ]
         ],
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
     if audience == "General":
@@ -544,20 +568,21 @@ Este stack end-to-end permite responder preguntas que un score aislado no puede 
 """
 )
 
-st.subheader("Comandos de reproducción")
-st.code(
-    "\n".join(
-        [
-            "uv sync --extra dev --extra platform",
-            "uv run python scripts/end_to_end_pipeline.py --run_name streamlit_story",
-            "uv run python scripts/export_streamlit_artifacts.py",
-            "uv run python scripts/export_storytelling_snapshot.py",
-            "uv run python scripts/extract_notebook_images.py",
-            "uv run streamlit run streamlit_app/app.py",
-        ]
-    ),
-    language="bash",
+render_section_checkpoint(
+    "Checkpoint final del recorrido E2E",
+    [
+        "PD calibrada aporta señal probabilística utilizable.",
+        "Conformal aporta incertidumbre cuantificada con cobertura controlada.",
+        "Optimización e IFRS9 traducen la analítica a decisiones económicas y regulatorias.",
+        "Gobernanza valida si el sistema completo sigue siendo operable.",
+    ],
 )
+st.info(
+    "Fairness conformal en profundidad (cobertura condicional por subgrupo, trade-offs y agenda online) "
+    "se desarrolla en `research_landscape.py` y `thesis_contribution.py`. "
+    "En especialización se reporta como señal de gobernanza, no como claim central."
+)
+render_page_feedback("thesis_end_to_end")
 
 next_page_teaser(
     "Arquitectura y Linaje de Datos",

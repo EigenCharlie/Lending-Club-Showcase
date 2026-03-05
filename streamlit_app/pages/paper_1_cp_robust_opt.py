@@ -7,7 +7,15 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from streamlit_app.components.context_help import methodology_dialog
 from streamlit_app.components.paper_scaffold import render_phase_tracker
+from streamlit_app.components.story_shell import (
+    render_key_takeaway,
+    render_next_steps,
+    render_page_header,
+    render_section_checkpoint,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.utils import (
     download_table,
@@ -21,9 +29,23 @@ st.title("🧪 Paper 1 — Working Draft")
 st.caption(
     "Conformal Prediction Intervals as Uncertainty Sets for Robust Credit Portfolio Optimization"
 )
+page_contract = get_page_contract("paper_1_cp_robust_opt")
+render_page_header(page_contract)
+render_key_takeaway(
+    "Novelty claim del draft: usar intervalos conformales Mondrian como conjuntos de incertidumbre operativos para optimización robusta de portafolio crediticio."
+)
 st.warning(
     "Borrador de trabajo para revisión académica. Los claims y tablas están ligados a artefactos "
     "canónicos del proyecto y pueden refinarse tras feedback del profesor."
+)
+methodology_dialog(
+    "Qué NO duplicar en este draft (usa el registro maestro)",
+    """
+- Teoría general de conformal prediction completa -> remitir a `Panorama de Investigación`.
+- Detalle exhaustivo de calibración -> resumir y enlazar a `Laboratorio de Modelos`.
+- Aquí el foco debe ser: uncertainty sets + formulación robusta + trade-off retorno/robustez.
+""",
+    button_label="Regla de foco narrativo del Paper 1",
 )
 
 pipeline_summary = try_load_json("pipeline_summary", directory="data", default={})
@@ -55,13 +77,19 @@ meta_df = pd.DataFrame(
         {"Campo": "Estado", "Valor": "Working Draft"},
         {"Campo": "Venue sugerido", "Valor": "European Journal of Operational Research (EJOR)"},
         {"Campo": "Dataset", "Valor": "Lending Club (split OOT)"},
-        {"Campo": "Pregunta", "Valor": "Cómo optimizar portafolio crediticio bajo incertidumbre de PD"},
+        {
+            "Campo": "Pregunta",
+            "Valor": "Cómo optimizar portafolio crediticio bajo incertidumbre de PD",
+        },
         {"Campo": "AUC PD", "Valor": f"{pd_metrics.get('auc_roc', np.nan):.4f}"},
-        {"Campo": "Cobertura CP 90%", "Valor": format_pct(coverage_90, 2) if np.isfinite(coverage_90) else "N/D"},
+        {
+            "Campo": "Cobertura CP 90%",
+            "Valor": format_pct(coverage_90, 2) if np.isfinite(coverage_90) else "N/D",
+        },
         {"Campo": "Price of Robustness", "Valor": format_number(price_of_robustness, prefix="$")},
     ]
 )
-st.dataframe(meta_df, use_container_width=True, hide_index=True)
+st.dataframe(meta_df, width="stretch", hide_index=True)
 
 k1, k2, k3, k4 = st.columns(4)
 k1.metric("Cobertura 90%", format_pct(coverage_90, 2) if np.isfinite(coverage_90) else "N/D")
@@ -75,14 +103,22 @@ st.markdown(
 Proponemos un framework **predict-then-optimize** para asignación de capital crediticio que
 integra intervalos de **Mondrian Conformal Prediction** como conjuntos de incertidumbre para
 optimización robusta vía Pyomo/HiGHS. En evaluación OOT, el modelo PD calibrado alcanza
-AUC={pd_metrics.get('auc_roc', np.nan):.4f}; los intervalos conformales obtienen cobertura
+AUC={pd_metrics.get("auc_roc", np.nan):.4f}; los intervalos conformales obtienen cobertura
 {coverage_90:.2%} al nivel nominal 90% (ancho medio {width_90:.3f}).
 
-En la frontera robusta, el portafolio no robusto logra {format_number(nonrobust_return, prefix='$')}
-frente a {format_number(robust_return, prefix='$')} en versión robusta, con
+En la frontera robusta, el portafolio no robusto logra {format_number(nonrobust_return, prefix="$")}
+frente a {format_number(robust_return, prefix="$")} en versión robusta, con
 {robust_funded} vs {nonrobust_funded} préstamos financiados (robusto vs no robusto), cuantificando
-el costo de robustez en {format_number(price_of_robustness, prefix='$')}.
+el costo de robustez en {format_number(price_of_robustness, prefix="$")}.
 """
+)
+render_section_checkpoint(
+    "Checkpoint de framing (Paper 1)",
+    [
+        "Claim principal: CP -> uncertainty sets -> robust optimization en crédito.",
+        "Aporte operativo: price of robustness cuantificado en OOT.",
+        "Aporte metodológico: integración Mondrian + Pyomo/HiGHS en setting aplicado.",
+    ],
 )
 
 st.markdown("## 2) Introduction")
@@ -100,13 +136,17 @@ st.markdown("## 3) Related Work (Resumen para borrador)")
 related = pd.DataFrame(
     [
         ["Elmachtoub & Grigas (2022)", "SPO+", "Objetivo orientado a decisión"],
-        ["Johnstone et al. (2021)", "Conformal uncertainty sets", "Conjuntos conformales para robust optimization"],
+        [
+            "Johnstone et al. (2021)",
+            "Conformal uncertainty sets",
+            "Conjuntos conformales para robust optimization",
+        ],
         ["Patel et al. (2024)", "Contextual CRO", "Conjuntos conformales contextuales"],
         ["Bertsimas & Sim (2004)", "Price of Robustness", "Marco clásico de robustez"],
     ],
     columns=["Referencia", "Eje", "Relevancia para este draft"],
 )
-st.dataframe(related, use_container_width=True, hide_index=True)
+st.dataframe(related, width="stretch", hide_index=True)
 
 st.markdown("## 4) Data and Experimental Protocol")
 st.markdown(
@@ -148,7 +188,7 @@ if not robust_summary.empty:
         title="Figure 1. Net Return by Risk Tolerance (Robust vs Non-Robust)",
         template=PLOTLY_TEMPLATE,
     )
-    st.plotly_chart(fig1, use_container_width=True)
+    st.plotly_chart(fig1, width="stretch")
     st.caption("Figure 1. Comparación de retorno neto por tolerancia de riesgo.")
 
     fig2 = px.line(
@@ -159,7 +199,7 @@ if not robust_summary.empty:
         title="Figure 2. Price of Robustness (%)",
         template=PLOTLY_TEMPLATE,
     )
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width="stretch")
     st.caption("Figure 2. Costo relativo de robustez en la frontera.")
 
     fig3 = px.line(
@@ -170,7 +210,7 @@ if not robust_summary.empty:
         title="Figure 3. Funded Loans by Policy",
         template=PLOTLY_TEMPLATE,
     )
-    st.plotly_chart(fig3, use_container_width=True)
+    st.plotly_chart(fig3, width="stretch")
     st.caption("Figure 3. Tamaño de portafolio financiado bajo política robusta y no robusta.")
 
 if not variant_benchmark.empty:
@@ -184,7 +224,7 @@ if not variant_benchmark.empty:
         title="Figure 4. Conformal Variant Trade-off",
         template=PLOTLY_TEMPLATE,
     )
-    st.plotly_chart(fig4, use_container_width=True)
+    st.plotly_chart(fig4, width="stretch")
     st.caption("Figure 4. Trade-off entre eficiencia (ancho) y cobertura mínima por grupo.")
 
 st.markdown("### Tablas principales")
@@ -194,7 +234,7 @@ with col_t1:
     if robust_summary.empty:
         st.info("No se encontró `portfolio_robustness_summary.parquet`.")
     else:
-        st.dataframe(robust_summary, use_container_width=True, hide_index=True)
+        st.dataframe(robust_summary, width="stretch", hide_index=True)
         download_table(robust_summary, "paper1_table1_robustness_summary.csv")
 
 with col_t2:
@@ -202,17 +242,17 @@ with col_t2:
     if variant_benchmark.empty:
         st.info("No se encontró `conformal_variant_benchmark.parquet`.")
     else:
-        st.dataframe(variant_benchmark, use_container_width=True, hide_index=True)
+        st.dataframe(variant_benchmark, width="stretch", hide_index=True)
         download_table(variant_benchmark, "paper1_table2_conformal_variant_benchmark.csv")
 
 with st.expander("Appendix Tables"):
     if not variant_benchmark_by_group.empty:
         st.markdown("**Table A1. Variant Benchmark by Group**")
-        st.dataframe(variant_benchmark_by_group, use_container_width=True, hide_index=True)
+        st.dataframe(variant_benchmark_by_group, width="stretch", hide_index=True)
         download_table(variant_benchmark_by_group, "paper1_tableA1_benchmark_by_group.csv")
     if not robust_frontier.empty:
         st.markdown("**Table A2. Robustness Frontier (full)**")
-        st.dataframe(robust_frontier, use_container_width=True, hide_index=True)
+        st.dataframe(robust_frontier, width="stretch", hide_index=True)
         download_table(robust_frontier, "paper1_tableA2_robustness_frontier.csv")
 
 st.markdown("## 7) Discussion")
@@ -289,4 +329,18 @@ st.markdown(
 - **Figure 4**: anotar claramente variante seleccionada y criterio de selección.
 - **Table 1/2/A1/A2**: recortar columnas no críticas para versión de main paper y mover resto a apéndice.
 """
+)
+render_next_steps(
+    [
+        (
+            "Panorama de Investigación",
+            "Registro maestro de posicionamiento y referencias para evitar duplicación.",
+            "pages/research_landscape.py",
+        ),
+        (
+            "Buenas Prácticas y Herramientas",
+            "Playbook de revisión de drafts y checklist pre-reunión.",
+            "pages/research_best_practices.py",
+        ),
+    ]
 )

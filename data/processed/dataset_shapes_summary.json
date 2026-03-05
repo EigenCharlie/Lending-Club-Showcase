@@ -5,19 +5,19 @@
   },
   "data/interim/lending_club_cleaned.parquet": {
     "rows": 1860764,
-    "cols": 110
+    "cols": 113
   },
   "data/processed/train.parquet": {
     "rows": 1346311,
-    "cols": 110
+    "cols": 113
   },
   "data/processed/calibration.parquet": {
     "rows": 237584,
-    "cols": 110
+    "cols": 113
   },
   "data/processed/test.parquet": {
     "rows": 276869,
-    "cols": 110
+    "cols": 113
   },
   "data/processed/train_fe.parquet": {
     "rows": 1346311,
@@ -25,7 +25,7 @@
   },
   "data/processed/loan_master.parquet": {
     "rows": 1346311,
-    "cols": 32
+    "cols": 35
   },
   "data/processed/time_series.parquet": {
     "rows": 118,
@@ -33,7 +33,7 @@
   },
   "data/processed/ead_dataset.parquet": {
     "rows": 249380,
-    "cols": 120
+    "cols": 123
   },
   "data/processed/obt_loan_features.parquet": {
     "rows": 1346311,

@@ -16,8 +16,15 @@ import re
 import plotly.express as px
 import streamlit as st
 
-from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.components.narrative import next_page_teaser
+from streamlit_app.components.story_shell import (
+    render_caveats,
+    render_key_takeaway,
+    render_page_feedback,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
+from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.utils import query_duckdb, suggest_sql_with_grok
 
 READ_ONLY_SQL = re.compile(
@@ -60,6 +67,11 @@ def _select_template(template_name: str, templates_map: dict[str, str]) -> None:
 
 
 st.title("💬 Chat con Datos")
+page_contract = get_page_contract("chat_with_data")
+render_page_header(page_contract)
+render_key_takeaway(
+    "Esta página ofrece trazabilidad técnica: permite contrastar con SQL explícito los insights mostrados en las páginas narrativas."
+)
 st.markdown(
     "Explora la base analítica directamente con SQL. "
     "Opcionalmente puedes convertir preguntas en lenguaje natural a SQL usando Grok."
@@ -71,6 +83,9 @@ la aplicación. Su propósito no es reemplazar notebooks técnicos, sino ofrecer
 segmentaciones y métricas clave del pipeline sobre DuckDB. Todas las consultas se ejecutan en modo lectura para mantener
 seguridad y consistencia de artefactos.
 """
+)
+st.warning(
+    "Aviso metodológico: una consulta SQL puede describir asociaciones, pero no prueba causalidad ni valida una política por sí sola."
 )
 
 st.subheader("Consultas rápidas")
@@ -137,6 +152,69 @@ SELECT table_schema, table_name, table_type
 FROM information_schema.tables
 ORDER BY table_schema, table_name""",
 }
+audit_templates = {
+    "Leakage guard (columnas sospechosas)": """
+SELECT
+    table_schema,
+    table_name,
+    column_name
+FROM information_schema.columns
+WHERE table_schema IN ('main_staging', 'main_feature_store')
+  AND (
+      lower(column_name) LIKE '%recover%'
+      OR lower(column_name) LIKE '%pymnt%'
+      OR lower(column_name) LIKE '%collection%'
+      OR lower(column_name) LIKE '%out_prncp%'
+      OR lower(column_name) LIKE '%last_pymnt%'
+  )
+ORDER BY table_schema, table_name, column_name""",
+    "Drift básico por cohorte (share grade)": """
+WITH base AS (
+    SELECT
+        date_trunc('quarter', issue_d) AS cohort_quarter,
+        grade
+    FROM main_staging.stg_loan_master
+    WHERE issue_d IS NOT NULL
+),
+agg AS (
+    SELECT
+        cohort_quarter,
+        grade,
+        count(*) AS n_loans
+    FROM base
+    GROUP BY cohort_quarter, grade
+)
+SELECT
+    cohort_quarter,
+    grade,
+    n_loans,
+    round(n_loans::DOUBLE / sum(n_loans) OVER (PARTITION BY cohort_quarter), 4) AS grade_share
+FROM agg
+ORDER BY cohort_quarter DESC, grade""",
+    "Calibración rápida por deciles": """
+WITH base AS (
+    SELECT
+        y_true::DOUBLE AS y_true,
+        pd_calibrated::DOUBLE AS pd_hat
+    FROM main_staging.stg_test_predictions
+),
+bucketed AS (
+    SELECT
+        ntile(10) OVER (ORDER BY pd_hat) AS decile,
+        y_true,
+        pd_hat
+    FROM base
+)
+SELECT
+    decile,
+    count(*) AS n_loans,
+    round(avg(pd_hat), 4) AS avg_predicted_pd,
+    round(avg(y_true), 4) AS observed_default_rate,
+    round(avg(abs(pd_hat - y_true)), 4) AS avg_abs_error
+FROM bucketed
+GROUP BY decile
+ORDER BY decile""",
+}
 
 if "chat_sql" not in st.session_state:
     st.session_state["chat_sql"] = "SELECT * FROM main_credit_risk.dim_loan_grades"
@@ -150,13 +228,28 @@ for idx, name in enumerate(templates.keys()):
     col = [col1, col2, col3][idx % 3]
     col.button(
         name,
-        use_container_width=True,
+        width="stretch",
         key=f"quick_query_{idx}",
         on_click=_select_template,
         args=(name, templates),
     )
 
 st.caption(f"Plantilla activa: **{st.session_state.get('chat_template_name', 'N/A')}**")
+
+st.subheader("Plantillas auditables (leakage/drift/checks básicos)")
+st.caption(
+    "Estas consultas no reemplazan validación estadística completa, pero sirven como primer filtro auditable antes de sacar conclusiones."
+)
+audit_col1, audit_col2, audit_col3 = st.columns(3)
+for idx, name in enumerate(audit_templates.keys()):
+    col = [audit_col1, audit_col2, audit_col3][idx % 3]
+    col.button(
+        name,
+        width="stretch",
+        key=f"audit_query_{idx}",
+        on_click=_select_template,
+        args=(name, audit_templates),
+    )
 
 st.subheader("Asistente lenguaje natural -> SQL (opcional)")
 grok_enabled = bool(os.getenv("GROK_API_KEY", "").strip())
@@ -170,8 +263,9 @@ if grok_enabled:
             st.warning("Primero escribe una pregunta.")
         else:
             try:
-                with st.spinner("Generando SQL..."):
+                with st.status("Generando SQL desde lenguaje natural...", expanded=False) as _nl_status:
                     suggestion = suggest_sql_with_grok(question, SCHEMA_CONTEXT)
+                    _nl_status.update(label="SQL generado", state="complete")
                 sql_suggested = suggestion.get("sql", "")
                 if not _is_read_only(sql_suggested):
                     st.error("La consulta generada no es read-only. Ajusta manualmente.")
@@ -197,17 +291,20 @@ sql = st.text_area(
 )
 
 run_query_clicked = st.button("Ejecutar consulta", type="primary")
-should_run_query = (run_query_clicked or st.session_state.get("run_chat_query", False)) and bool(sql.strip())
+should_run_query = (run_query_clicked or st.session_state.get("run_chat_query", False)) and bool(
+    sql.strip()
+)
 if should_run_query:
     st.session_state["run_chat_query"] = False
     if not _is_read_only(sql):
         st.error("Solo se permiten consultas de lectura.")
     else:
         try:
-            with st.spinner("Ejecutando..."):
+            with st.status("Ejecutando consulta SQL (read-only)...", expanded=False) as _sql_status:
                 result = query_duckdb(sql)
+                _sql_status.update(label=f"Consulta completada ({len(result)} filas)", state="complete")
             st.success(f"Filas retornadas: {len(result)}")
-            st.dataframe(result, use_container_width=True, height=420)
+            st.dataframe(result, width="stretch", height=420)
             if len(result) == 0:
                 st.warning(
                     "La consulta se ejecutó sin error pero retornó 0 filas. "
@@ -227,7 +324,7 @@ if should_run_query:
                     )
                     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390)
                     fig.update_traces(marker_color="#00D4AA")
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width="stretch")
                     st.caption(
                         "Propósito: dar lectura rápida al resultado SQL sin salir de la página. "
                         "Insight: útil para validar segmentaciones y tendencias antes de análisis profundo."
@@ -268,6 +365,14 @@ narrativas puede contrastarse aquí con SQL explícito. Eso fortalece trazabilid
 negocio exploren el mismo stack con distintos niveles de profundidad.
 """
 )
+render_caveats(
+    [
+        "SQL exploratorio no demuestra causalidad: para decisiones de política usar páginas causales y validación de supuestos.",
+        "El asistente NL→SQL puede proponer consultas válidas pero analíticamente inadecuadas; revisar siempre.",
+        "Resultados dependen de la capa dbt/DuckDB disponible en el entorno local y su frescura.",
+    ]
+)
+render_page_feedback("chat_with_data")
 
 next_page_teaser(
     "Resumen Ejecutivo",

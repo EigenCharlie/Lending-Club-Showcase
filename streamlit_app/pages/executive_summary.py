@@ -18,10 +18,23 @@ from streamlit_flow.elements import StreamlitFlowEdge, StreamlitFlowNode
 from streamlit_flow.layouts import ManualLayout
 from streamlit_flow.state import StreamlitFlowState
 
+from streamlit_app.components.context_help import term_popover
+from streamlit_app.components.dvc_kpi_spine import render_global_kpi_spine
 from streamlit_app.components.metric_cards import kpi_row
-from streamlit_app.components.narrative import next_page_teaser, storytelling_intro
+from streamlit_app.components.narrative import next_page_teaser
+from streamlit_app.components.story_shell import (
+    render_decision_box,
+    render_key_takeaway,
+    render_page_feedback,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
-from streamlit_app.utils import format_number, format_pct, load_json
+from streamlit_app.utils import (
+    format_number,
+    format_pct,
+    try_load_json,
+)
 
 
 def _first_valid(*values: float | int | None) -> float:
@@ -32,17 +45,83 @@ def _first_valid(*values: float | int | None) -> float:
 
 
 _ARCH_NODES = [
-    {"id": "raw", "label": "Lending Club Raw", "layer": "data", "detail": "2.93M filas · 142 cols", "icon": "\U0001F4E6"},
-    {"id": "clean", "label": "Limpieza + QA", "layer": "data", "detail": "1.86M filas · 110 cols", "icon": "\U0001F9F9"},
-    {"id": "fe", "label": "Feature Engineering", "layer": "data", "detail": "WOE/IV · ratios · buckets", "icon": "\u2699\uFE0F"},
-    {"id": "pd", "label": "PD Model", "layer": "model", "detail": "CatBoost + calibración · AUC OOT", "icon": "\U0001F3AF"},
-    {"id": "conformal", "label": "Conformal Mondrian", "layer": "model", "detail": "Intervalos PD · Coverage 90/95", "icon": "\U0001F4D0"},
-    {"id": "causal", "label": "Causalidad (DML/CATE)", "layer": "model", "detail": "+1pp tasa \u2192 +0.787pp default", "icon": "\U0001F9EC"},
-    {"id": "survival", "label": "Forecast + Survival", "layer": "model", "detail": "Cox/RSF concordance", "icon": "\u23F3"},
-    {"id": "optim", "label": "Optimizaci\u00f3n Robusta", "layer": "decision", "detail": "Pyomo + HiGHS", "icon": "\U0001F4BC"},
-    {"id": "ifrs9", "label": "IFRS9 (Stage + ECL)", "layer": "decision", "detail": "4 escenarios · PD\u00d7LGD", "icon": "\U0001F3E6"},
-    {"id": "governance", "label": "Gobernanza", "layer": "decision", "detail": "Drift · Fairness · Policy", "icon": "\U0001F6E1\uFE0F"},
-    {"id": "streamlit", "label": "Libro Din\u00e1mico Streamlit", "layer": "output", "detail": "17 p\u00e1ginas interactivas", "icon": "\U0001F4CA"},
+    {
+        "id": "raw",
+        "label": "Lending Club Raw",
+        "layer": "data",
+        "detail": "2.93M filas · 142 cols",
+        "icon": "\U0001f4e6",
+    },
+    {
+        "id": "clean",
+        "label": "Limpieza + QA",
+        "layer": "data",
+        "detail": "1.86M filas · 110 cols",
+        "icon": "\U0001f9f9",
+    },
+    {
+        "id": "fe",
+        "label": "Feature Engineering",
+        "layer": "data",
+        "detail": "WOE/IV · ratios · buckets",
+        "icon": "\u2699\ufe0f",
+    },
+    {
+        "id": "pd",
+        "label": "PD Model",
+        "layer": "model",
+        "detail": "CatBoost + calibración · AUC OOT",
+        "icon": "\U0001f3af",
+    },
+    {
+        "id": "conformal",
+        "label": "Conformal Mondrian",
+        "layer": "model",
+        "detail": "Intervalos PD · Coverage 90/95",
+        "icon": "\U0001f4d0",
+    },
+    {
+        "id": "causal",
+        "label": "Causalidad (DML/CATE)",
+        "layer": "model",
+        "detail": "+1pp tasa \u2192 +0.787pp default",
+        "icon": "\U0001f9ec",
+    },
+    {
+        "id": "survival",
+        "label": "Forecast + Survival",
+        "layer": "model",
+        "detail": "Cox/RSF concordance",
+        "icon": "\u23f3",
+    },
+    {
+        "id": "optim",
+        "label": "Optimizaci\u00f3n Robusta",
+        "layer": "decision",
+        "detail": "Pyomo + HiGHS",
+        "icon": "\U0001f4bc",
+    },
+    {
+        "id": "ifrs9",
+        "label": "IFRS9 (Stage + ECL)",
+        "layer": "decision",
+        "detail": "4 escenarios · PD\u00d7LGD",
+        "icon": "\U0001f3e6",
+    },
+    {
+        "id": "governance",
+        "label": "Gobernanza",
+        "layer": "decision",
+        "detail": "Drift · Fairness · Policy",
+        "icon": "\U0001f6e1\ufe0f",
+    },
+    {
+        "id": "streamlit",
+        "label": "Libro Din\u00e1mico Streamlit",
+        "layer": "output",
+        "detail": "17 p\u00e1ginas interactivas",
+        "icon": "\U0001f4ca",
+    },
 ]
 _ARCH_EDGES = [
     {"source": "raw", "target": "clean", "desc": "Filtro resueltos"},
@@ -65,10 +144,10 @@ _LAYER_COLORS = {
     "output": {"bg": "#EEF2FF", "border": "#6366F1", "accent": "#4338CA"},
 }
 _LAYER_BADGES = {
-    "data": "\U0001F4BE DATOS",
-    "model": "\U0001F9E0 MODELO",
-    "decision": "\U0001F4A1 DECISI\u00d3N",
-    "output": "\U0001F680 SALIDA",
+    "data": "\U0001f4be DATOS",
+    "model": "\U0001f9e0 MODELO",
+    "decision": "\U0001f4a1 DECISI\u00d3N",
+    "output": "\U0001f680 SALIDA",
 }
 _NODE_MAP = {n["id"]: n for n in _ARCH_NODES}
 _EXEC_ARCH_STATE_KEY = "exec_arch_flow_state_manual"
@@ -94,22 +173,25 @@ st.caption(
     "optimización robusta e IFRS9 sobre un mismo dataset."
 )
 
+page_contract = get_page_contract("executive_summary")
+render_page_header(page_contract)
+render_key_takeaway(
+    "El valor del proyecto no está en una sola métrica: está en encadenar PD, incertidumbre, optimización e IFRS9 con una fuente canónica común."
+)
+term_popover("canónico", label="Qué significa 'canónico' en este dashboard")
+
 st.success(
     "**Lending Club**: la plataforma de préstamos peer-to-peer más grande de EE.UU. "
     "Este proyecto transforma su histórico de préstamos en un sistema completo "
     "de decisión de riesgo de crédito, desde score hasta provisiones IFRS9."
 )
 
-storytelling_intro(
-    page_goal="Conectar en una sola vista el flujo completo de riesgo: predicción, incertidumbre, decisión y regulación.",
-    business_value="Evita decisiones parciales (solo AUC o solo provisión) y permite balancear retorno, robustez y cumplimiento.",
-    key_decision="Elegir una política de riesgo defendible para originación y provisión con métricas consistentes.",
-    how_to_read=[
-        "Revisar métricas de calidad de modelo (AUC/Gini/Brier/ECE).",
-        "Contrastar robusto vs no robusto (retorno, PoR, aprobados).",
-        "Confirmar cobertura conformal y estado de gobernanza antes de adoptar una política.",
-    ],
+render_decision_box(
+    "Evaluar la política de riesgo con KPIs canónicos (DVC) y después bajar al detalle por módulo para defender trade-offs.",
+    owner="Riesgo / Data Science",
+    cadence="snapshot por commit o release",
 )
+render_global_kpi_spine("executive")
 
 st.markdown(
     """
@@ -126,6 +208,40 @@ st.markdown(
 """
 )
 
+st.markdown("### Métrica ML vs KPI de negocio")
+st.dataframe(
+    pd.DataFrame(
+        [
+            {
+                "Capa": "Ranking",
+                "Métrica ML": "AUC / KS",
+                "KPI de negocio asociado": "Priorización de originación y revisión",
+                "Riesgo de mala lectura": "Asumir que buen AUC implica probabilidad confiable",
+            },
+            {
+                "Capa": "Probabilidad",
+                "Métrica ML": "Brier / ECE (proper scoring)",
+                "KPI de negocio asociado": "Pricing, límites y provisión IFRS9",
+                "Riesgo de mala lectura": "Confundir ranking alto con calibración adecuada",
+            },
+            {
+                "Capa": "Incertidumbre",
+                "Métrica ML": "Coverage / Interval width",
+                "KPI de negocio asociado": "Robustez de decisión y buffers prudenciales",
+                "Riesgo de mala lectura": "Leer bandas como CI de parámetros y no como PI operativo",
+            },
+            {
+                "Capa": "Decisión",
+                "Métrica ML": "Price of Robustness / funded loans",
+                "KPI de negocio asociado": "Retorno ajustado por riesgo y resiliencia",
+                "Riesgo de mala lectura": "Optimizar retorno puntual sin costo de incertidumbre",
+            },
+        ]
+    ),
+    width="stretch",
+    hide_index=True,
+)
+
 st.markdown(
     """
 Esta portada resume el hilo completo y sirve como punto de entrada. La lectura recomendada es secuencial:
@@ -133,11 +249,11 @@ contexto de datos, ingeniería de features, modelo PD, incertidumbre, causalidad
 """
 )
 
-summary = load_json("pipeline_summary")
-eda = load_json("eda_summary")
-comparison = load_json("model_comparison")
-policy = load_json("conformal_policy_status", directory="models")
-governance = load_json("modeva_governance_status", directory="models")
+summary = try_load_json("pipeline_summary")
+eda = try_load_json("eda_summary")
+comparison = try_load_json("model_comparison")
+policy = try_load_json("conformal_policy_status", directory="models")
+governance = try_load_json("governance_status", directory="models")
 
 pipeline = summary.get("pipeline", {})
 pd_model = summary.get("pd_model", {})
@@ -255,7 +371,7 @@ with col_1:
         labels={"modo": "", "retorno_neto": "USD"},
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], showlegend=False, height=360)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: comparar impacto económico de la política robusta frente a la puntual. "
         "Insight: la política robusta sacrifica parte del upside para estabilizar resultados en escenarios adversos."
@@ -271,7 +387,7 @@ with col_2:
         labels={"modo": "", "ecl": "USD"},
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], showlegend=False, height=360)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: visualizar costo esperado de crédito por política. "
         "Insight: la decisión de aprobación no cambia solo retorno, también el nivel de provisión implícita."
@@ -349,7 +465,9 @@ for _i, _e in enumerate(_ARCH_EDGES):
     )
 
 if _EXEC_ARCH_STATE_KEY not in st.session_state:
-    st.session_state[_EXEC_ARCH_STATE_KEY] = StreamlitFlowState(nodes=_flow_nodes, edges=_flow_edges)
+    st.session_state[_EXEC_ARCH_STATE_KEY] = StreamlitFlowState(
+        nodes=_flow_nodes, edges=_flow_edges
+    )
 
 _arch_state = streamlit_flow(
     "exec_architecture_flow",
@@ -373,11 +491,11 @@ if _selected and _selected in _NODE_MAP:
     st.info(f"**{_sel_node['icon']} {_sel_node['label']}** — {_sel_node['detail']}")
 
 _legend_cols = st.columns(4)
-for _col, (_lk, _lv) in zip(_legend_cols, _LAYER_COLORS.items()):
+for _col, (_lk, _lv) in zip(_legend_cols, _LAYER_COLORS.items(), strict=False):
     with _col:
         st.markdown(
             f'<div style="background:{_lv["bg"]}; border:2px solid {_lv["border"]}; '
-            f'border-radius:8px; padding:8px 12px; text-align:center; font-size:13px; '
+            f"border-radius:8px; padding:8px 12px; text-align:center; font-size:13px; "
             f'color:{_lv["accent"]}; font-weight:600;">{_LAYER_BADGES[_lk]}</div>',
             unsafe_allow_html=True,
         )
@@ -409,6 +527,7 @@ decisión final cuando existe incertidumbre de modelo?”. Esta portada anticipa
 el valor surge de integrar predicción, incertidumbre, causalidad y optimización en una misma narrativa operativa.
 """
 )
+render_page_feedback("executive_summary")
 
 next_page_teaser(
     "Historia de Datos",

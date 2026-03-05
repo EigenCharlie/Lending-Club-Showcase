@@ -1,0 +1,55 @@
+{
+  "schema_version": "2026-03-04.1",
+  "generated_at_utc": "2026-03-05T00:52:31.843764+00:00",
+  "run_tag": "2026-03-04-C-core-balanced-cert2",
+  "overall_pass": true,
+  "n_attributes": 3,
+  "n_passed": 3,
+  "attributes": [
+    {
+      "attribute": "home_ownership",
+      "dpd": 0.04346886685782536,
+      "eo_gap": 0.08591165502982334,
+      "dir": 0.955876778131965,
+      "tpr_gap": 0.0238214297727537,
+      "fpr_gap": 0.08591165502982334,
+      "passed_dpd": true,
+      "passed_eo": true,
+      "passed_dir": true,
+      "passed_all": true
+    },
+    {
+      "attribute": "annual_inc_quartile",
+      "dpd": 0.03673023694264166,
+      "eo_gap": 0.07147811200036613,
+      "dir": 0.9628536557842962,
+      "tpr_gap": 0.02176538331821265,
+      "fpr_gap": 0.07147811200036613,
+      "passed_dpd": true,
+      "passed_eo": true,
+      "passed_dir": true,
+      "passed_all": true
+    },
+    {
+      "attribute": "verification_status",
+      "dpd": 0.05975307621919457,
+      "eo_gap": 0.09683751578301358,
+      "dir": 0.9392854333012749,
+      "tpr_gap": 0.03825462261153334,
+      "fpr_gap": 0.09683751578301358,
+      "passed_dpd": true,
+      "passed_eo": true,
+      "passed_dir": true,
+      "passed_all": true
+    }
+  ],
+  "prediction_threshold": 0.5,
+  "prediction_threshold_source": "policy_default",
+  "outcome_mode": "approval",
+  "thresholds": {
+    "dpd": 0.1,
+    "eo_gap": 0.11,
+    "dir": 0.8
+  },
+  "policy_config": "configs/fairness_policy.yaml"
+}

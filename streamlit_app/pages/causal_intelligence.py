@@ -17,13 +17,25 @@ import streamlit as st
 
 from streamlit_app.components.metric_cards import kpi_row
 from streamlit_app.components.narrative import next_page_teaser, storytelling_intro
+from streamlit_app.components.story_shell import (
+    render_caveats,
+    render_key_takeaway,
+    render_page_feedback,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
-from streamlit_app.utils import get_notebook_image_path, load_parquet
+from streamlit_app.utils import get_notebook_image_path, load_parquet, try_load_parquet
 
 st.title("🧬 Inteligencia Causal")
 st.caption(
     "Estimación de efectos causales heterogéneos para orientar políticas de precio "
     "y acciones de mitigación de riesgo."
+)
+page_contract = get_page_contract("causal_intelligence")
+render_page_header(page_contract)
+render_key_takeaway(
+    "La meta aquí no es describir correlaciones sino estimar efectos causales heterogéneos útiles para políticas de precio/intervención."
 )
 storytelling_intro(
     page_goal=(
@@ -151,7 +163,7 @@ st.dataframe(
             },
         ]
     ),
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
 )
 st.markdown(
@@ -175,7 +187,7 @@ with col1:
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390)
     fig.update_traces(marker_color="#00D4AA")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: observar heterogeneidad de sensibilidad causal. Insight: una distribución ancha de CATE confirma que "
         "una política única de tasa no es óptima para todos los clientes."
@@ -190,7 +202,7 @@ with col2:
         labels={"grade": "Grade", "cate": "CATE"},
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: comparar sensibilidad causal por grade. Insight: algunos segmentos concentran mayor potencial de reducción "
         "de default ante ajuste de tasa."
@@ -205,11 +217,15 @@ with col3:
         y="total_net_value",
         color="action_rate",
         title="Valor neto total por segmento",
-        labels={"segment": "Segmento", "total_net_value": "Valor neto (USD)", "action_rate": "Action rate"},
+        labels={
+            "segment": "Segmento",
+            "total_net_value": "Valor neto (USD)",
+            "action_rate": "Action rate",
+        },
         color_continuous_scale="Tealgrn",
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390, coloraxis_showscale=False)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: priorizar segmentos por valor económico esperado. Insight: no siempre coincide el mayor valor con el mayor "
         "action rate, por lo que la regla debe optimizar ambos."
@@ -227,7 +243,7 @@ with col4:
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390, coloraxis_showscale=False)
     fig.update_yaxes(tickformat=".0%")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: medir intensidad de intervención por grade. Insight: action rate alto con baja mejora de PD puede no ser "
         "económicamente eficiente."
@@ -259,11 +275,15 @@ fig = px.scatter(
     size="n_selected",
     text="rule_name",
     title="Trade-off entre cobertura de acción y valor económico",
-    labels={"action_rate": "Action rate", "total_net_value": "Valor neto (USD)", "pass_all": "Cumple constraints"},
+    labels={
+        "action_rate": "Action rate",
+        "total_net_value": "Valor neto (USD)",
+        "pass_all": "Cumple constraints",
+    },
 )
 fig.update_traces(textposition="top center")
 fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=420)
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 st.caption(
     "Propósito: evaluar frontera de reglas candidatas. Insight: la mejor regla no es la de mayor cobertura, sino la que "
     "maximiza valor cumpliendo restricciones."
@@ -271,7 +291,7 @@ st.caption(
 
 st.dataframe(
     rule_candidates.sort_values(["pass_all", "total_net_value"], ascending=[False, False]),
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
 )
 
@@ -288,8 +308,10 @@ fig = go.Figure(
         connector={"line": {"color": "#A0AEC0"}},
     )
 )
-fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=360, title="Cómo se forma el valor causal neto")
-st.plotly_chart(fig, use_container_width=True)
+fig.update_layout(
+    **PLOTLY_TEMPLATE["layout"], height=360, title="Cómo se forma el valor causal neto"
+)
+st.plotly_chart(fig, width="stretch")
 st.caption(
     "Propósito: descomponer creación de valor en ahorro de pérdida vs impacto comercial. Insight: hace auditable el trade-off "
     "de una política causal antes de implementarla."
@@ -325,7 +347,7 @@ with col_i:
         st.image(
             str(img),
             caption="Notebook 07: correlación vs causalidad para efecto de tasa sobre default.",
-            use_container_width=True,
+            width="stretch",
         )
 with col_j:
     img = get_notebook_image_path("07_causal_inference", "cell_026_out_01.png")
@@ -333,7 +355,7 @@ with col_j:
         st.image(
             str(img),
             caption="Notebook 07: sensibilidad de tasa y recomendación de política por segmento.",
-            use_container_width=True,
+            width="stretch",
         )
 
 with st.expander("Muestra de simulación contrafactual por préstamo"):
@@ -349,9 +371,50 @@ with st.expander("Muestra de simulación contrafactual por préstamo"):
     ]
     st.dataframe(
         simulation[cols].sample(min(120, len(simulation)), random_state=3),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
+
+st.subheader("5) Impacto en optimización de portafolio")
+cate_comparison = try_load_parquet("cate_portfolio_comparison")
+if not cate_comparison.empty and len(cate_comparison) == 2:
+    base = cate_comparison[cate_comparison["scenario"] == "baseline"].iloc[0]
+    adj = cate_comparison[cate_comparison["scenario"] == "cate_adjusted"].iloc[0]
+    delta_obj = float(adj["objective_value"] - base["objective_value"])
+    delta_funded = int(adj["n_funded"] - base["n_funded"])
+    kpi_row(
+        [
+            {"label": "Objetivo baseline", "value": f"${base['objective_value']:,.0f}"},
+            {"label": "Objetivo CATE-adj", "value": f"${adj['objective_value']:,.0f}"},
+            {"label": "Δ objetivo", "value": f"${delta_obj:+,.0f}"},
+            {"label": "Δ loans funded", "value": f"{delta_funded:+d}"},
+        ],
+        n_cols=4,
+    )
+    fig = px.bar(
+        cate_comparison.melt(id_vars="scenario", var_name="metric", value_name="value"),
+        x="metric",
+        y="value",
+        color="scenario",
+        barmode="group",
+        title="Baseline vs CATE-adjusted portfolio",
+    )
+    fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=350)
+    st.plotly_chart(fig, width="stretch")
+    st.caption(
+        "Este análisis cierra el ciclo causal→portafolio: los efectos heterogéneos de NB07 "
+        "se traducen en ajustes de tasa que mejoran la asignación de capital en NB08."
+    )
+else:
+    st.info("Ejecuta `scripts/optimize_cate_portfolio.py` para comparar portafolios baseline vs CATE-adjusted.")
+
+render_caveats(
+    [
+        "Los efectos causales dependen de supuestos de identificación y cobertura de covariables observadas.",
+        "Una política basada en CATE requiere validación operativa y guardrails antes de despliegue.",
+    ]
+)
+render_page_feedback("causal_intelligence")
 
 next_page_teaser(
     "Optimizador de Portafolio",

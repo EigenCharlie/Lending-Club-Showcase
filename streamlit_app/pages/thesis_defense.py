@@ -16,6 +16,13 @@ import streamlit as st
 
 from streamlit_app.components.metric_cards import kpi_row
 from streamlit_app.components.narrative import next_page_teaser
+from streamlit_app.components.story_shell import (
+    render_caveats,
+    render_key_takeaway,
+    render_page_feedback,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.utils import format_number, format_pct, load_json, load_parquet
 
@@ -23,6 +30,11 @@ st.title("🧩 Mapa Integrado de Métodos")
 st.caption(
     "Síntesis de cómo se complementan machine learning, estadística, análisis causal "
     "e investigación de operaciones en el pipeline."
+)
+page_contract = get_page_contract("thesis_defense")
+render_page_header(page_contract)
+render_key_takeaway(
+    "El claim central de esta página es metodológico: el proyecto es más fuerte por complementariedad entre técnicas que por el desempeño de una sola."
 )
 st.markdown(
     """
@@ -36,7 +48,7 @@ causalidad, optimización y cumplimiento IFRS9.
 summary = load_json("pipeline_summary")
 model_cmp = load_json("model_comparison")
 conformal = load_json("conformal_policy_status", directory="models")
-governance = load_json("modeva_governance_status", directory="models")
+governance = load_json("governance_status", directory="models")
 best_calibration = str(model_cmp.get("best_calibration", "calibración seleccionada"))
 
 pipeline = summary.get("pipeline", {})
@@ -48,10 +60,22 @@ kpi_row(
     [
         {"label": "AUC ML", "value": f"{final.get('auc_roc', 0):.4f}"},
         {"label": "Cobertura 90%", "value": format_pct(conformal.get("coverage_90", 0))},
-        {"label": "C-index RSF", "value": f"{summary.get('survival', {}).get('rsf_concordance', 0):.4f}"},
-        {"label": "Valor causal neto", "value": format_number(rule.get("total_net_value", 0), prefix="$")},
-        {"label": "Retorno robusto", "value": format_number(pipeline.get("robust_return", 0), prefix="$")},
-        {"label": "Gobernanza", "value": "OK" if governance.get("overall_pass", False) else "Revisión"},
+        {
+            "label": "C-index RSF",
+            "value": f"{summary.get('survival', {}).get('rsf_concordance', 0):.4f}",
+        },
+        {
+            "label": "Valor causal neto",
+            "value": format_number(rule.get("total_net_value", 0), prefix="$"),
+        },
+        {
+            "label": "Retorno robusto",
+            "value": format_number(pipeline.get("robust_return", 0), prefix="$"),
+        },
+        {
+            "label": "Gobernanza",
+            "value": "OK" if governance.get("overall_pass", False) else "Revisión",
+        },
     ],
     n_cols=3,
 )
@@ -63,7 +87,7 @@ methods = pd.DataFrame(
             "Disciplina": "Machine Learning",
             "Técnica principal": "CatBoost calibrado + SHAP",
             "Pregunta que responde": "¿Qué préstamos tienen mayor probabilidad de default?",
-            "Artefacto": "model_comparison.json / shap_summary.parquet",
+            "Artefacto": "Métricas PD y explicabilidad SHAP",
             "Valor para riesgo": "Priorización y explicación de riesgo individual",
         },
         {
@@ -96,7 +120,7 @@ methods = pd.DataFrame(
         },
     ]
 )
-st.dataframe(methods, use_container_width=True, hide_index=True)
+st.dataframe(methods, width="stretch", hide_index=True)
 
 st.subheader("Cadena de valor analítica")
 st.markdown(
@@ -119,16 +143,40 @@ Solo después tiene sentido leer los impactos en valor neto, asignación de capi
 tech_chain = pd.DataFrame(
     [
         {"métrica": "AUC OOT", "valor": final.get("auc_roc", 0.0), "bloque": "Predicción"},
-        {"métrica": "Cobertura 90%", "valor": conformal.get("coverage_90", 0.0), "bloque": "Incertidumbre"},
-        {"métrica": "C-index RSF", "valor": summary.get("survival", {}).get("rsf_concordance", 0.0), "bloque": "Horizonte"},
+        {
+            "métrica": "Cobertura 90%",
+            "valor": conformal.get("coverage_90", 0.0),
+            "bloque": "Incertidumbre",
+        },
+        {
+            "métrica": "C-index RSF",
+            "valor": summary.get("survival", {}).get("rsf_concordance", 0.0),
+            "bloque": "Horizonte",
+        },
     ]
 )
 value_chain = pd.DataFrame(
     [
-        {"etapa": "Retorno robusto", "valor_usd": pipeline.get("robust_return", 0.0), "tipo": "Impacto económico"},
-        {"etapa": "Valor causal neto", "valor_usd": float(rule.get("total_net_value", 0.0)), "tipo": "Impacto económico"},
-        {"etapa": "IFRS9 baseline", "valor_usd": float(ifrs9[ifrs9["scenario"] == "baseline"]["total_ecl"].iloc[0]), "tipo": "Impacto regulatorio"},
-        {"etapa": "IFRS9 severe", "valor_usd": float(ifrs9[ifrs9["scenario"] == "severe"]["total_ecl"].iloc[0]), "tipo": "Impacto regulatorio"},
+        {
+            "etapa": "Retorno robusto",
+            "valor_usd": pipeline.get("robust_return", 0.0),
+            "tipo": "Impacto económico",
+        },
+        {
+            "etapa": "Valor causal neto",
+            "valor_usd": float(rule.get("total_net_value", 0.0)),
+            "tipo": "Impacto económico",
+        },
+        {
+            "etapa": "IFRS9 baseline",
+            "valor_usd": float(ifrs9[ifrs9["scenario"] == "baseline"]["total_ecl"].iloc[0]),
+            "tipo": "Impacto regulatorio",
+        },
+        {
+            "etapa": "IFRS9 severe",
+            "valor_usd": float(ifrs9[ifrs9["scenario"] == "severe"]["total_ecl"].iloc[0]),
+            "tipo": "Impacto regulatorio",
+        },
     ]
 )
 
@@ -144,7 +192,7 @@ with col_a:
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390, showlegend=True)
     fig.update_yaxes(range=[0, 1], tickformat=".0%")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: validar que cada bloque técnico cumpla su función antes de monetizar resultados. "
         "Insight: cuando AUC, cobertura y C-index se mantienen en niveles consistentes, la cadena de decisión "
@@ -161,7 +209,7 @@ with col_b:
         labels={"etapa": "", "valor_usd": "USD"},
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: traducir desempeño analítico a impacto económico y regulatorio. "
         "Insight: retorno robusto y valor causal muestran creación de valor, mientras IFRS9 refleja carga prudencial "
@@ -188,7 +236,7 @@ st.dataframe(
             },
         ]
     ),
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
 )
 st.markdown(
@@ -204,17 +252,45 @@ Ese puente técnico-negocio es la esencia de esta cadena de valor analítica.
 st.subheader("Matriz de complementariedad")
 matrix = pd.DataFrame(
     [
-        {"Módulo": "Historia de datos", "Alimenta a": "ML / Causal / OR", "Producto": "Segmentación y drivers base"},
-        {"Módulo": "Modelos PD", "Alimenta a": "Conformal / OR / IFRS9", "Producto": "Probabilidades calibradas"},
-        {"Módulo": "Conformal", "Alimenta a": "OR / IFRS9", "Producto": "Intervalos de incertidumbre"},
-        {"Módulo": "Series de tiempo", "Alimenta a": "IFRS9", "Producto": "Escenarios forward-looking"},
+        {
+            "Módulo": "Historia de datos",
+            "Alimenta a": "ML / Causal / OR",
+            "Producto": "Segmentación y drivers base",
+        },
+        {
+            "Módulo": "Modelos PD",
+            "Alimenta a": "Conformal / OR / IFRS9",
+            "Producto": "Probabilidades calibradas",
+        },
+        {
+            "Módulo": "Conformal",
+            "Alimenta a": "OR / IFRS9",
+            "Producto": "Intervalos de incertidumbre",
+        },
+        {
+            "Módulo": "Series de tiempo",
+            "Alimenta a": "IFRS9",
+            "Producto": "Escenarios forward-looking",
+        },
         {"Módulo": "Supervivencia", "Alimenta a": "IFRS9", "Producto": "Estructura temporal de PD"},
-        {"Módulo": "Causalidad", "Alimenta a": "OR / negocio", "Producto": "Reglas de intervención"},
-        {"Módulo": "Optimización", "Alimenta a": "Comité de riesgo", "Producto": "Política de asignación"},
-        {"Módulo": "Gobernanza", "Alimenta a": "Control interno", "Producto": "Validación y trazabilidad"},
+        {
+            "Módulo": "Causalidad",
+            "Alimenta a": "OR / negocio",
+            "Producto": "Reglas de intervención",
+        },
+        {
+            "Módulo": "Optimización",
+            "Alimenta a": "Comité de riesgo",
+            "Producto": "Política de asignación",
+        },
+        {
+            "Módulo": "Gobernanza",
+            "Alimenta a": "Control interno",
+            "Producto": "Validación y trazabilidad",
+        },
     ]
 )
-st.dataframe(matrix, use_container_width=True, hide_index=True)
+st.dataframe(matrix, width="stretch", hide_index=True)
 
 st.subheader("Diferenciación vs. ecosistema público")
 st.markdown(
@@ -225,21 +301,69 @@ Se analizaron **más de 60 notebooks públicos** en Kaggle sobre el mismo datase
 )
 diff_data = pd.DataFrame(
     [
-        {"Técnica": "EDA y visualización", "Kaggle (60+ notebooks)": "Ampliamente cubierto", "Este proyecto": "Cubierto + contexto macro + geografía"},
-        {"Técnica": "Clasificación binaria (RF, XGBoost, LogReg)", "Kaggle (60+ notebooks)": "Estándar en ~80% de notebooks", "Este proyecto": f"CatBoost + calibración {best_calibration} (ECE={final.get('ece', 0):.4f})"},
-        {"Técnica": "SHAP / explicabilidad", "Kaggle (60+ notebooks)": "1-2 notebooks en detalle", "Este proyecto": "Cubierto en NB03 + Streamlit"},
-        {"Técnica": "Validación out-of-time", "Kaggle (60+ notebooks)": "Ninguno (todos usan random split)", "Este proyecto": "Split temporal 2007-2017 / 2017 / 2018-2020"},
-        {"Técnica": "WOE/IV feature engineering", "Kaggle (60+ notebooks)": "Ninguno", "Este proyecto": "OptBinning con supervisión monotónica"},
-        {"Técnica": "Calibración de probabilidades", "Kaggle (60+ notebooks)": "Ninguno", "Este proyecto": "Platt vs Isotonic vs Venn-Abers"},
-        {"Técnica": "Conformal prediction", "Kaggle (60+ notebooks)": "Ninguno", "Este proyecto": "MAPIE Mondrian con cobertura garantizada"},
-        {"Técnica": "Survival analysis", "Kaggle (60+ notebooks)": "Ninguno", "Este proyecto": "Cox PH + RSF para PD lifetime"},
-        {"Técnica": "Inferencia causal", "Kaggle (60+ notebooks)": "Ninguno", "Este proyecto": "DML + Causal Forest (ATE + CATE)"},
-        {"Técnica": "Portfolio optimization", "Kaggle (60+ notebooks)": "Ninguno (1 notebook con threshold simple)", "Este proyecto": "Pyomo/HiGHS robusta con uncertainty sets"},
-        {"Técnica": "IFRS9 / ECL / staging", "Kaggle (60+ notebooks)": "Ninguno", "Este proyecto": "4 escenarios + sensibilidad + conformal SICR"},
-        {"Técnica": "Predict-then-optimize", "Kaggle (60+ notebooks)": "Ninguno", "Este proyecto": "Pipeline completo PD → Conformal → Pyomo"},
+        {
+            "Técnica": "EDA y visualización",
+            "Kaggle (60+ notebooks)": "Ampliamente cubierto",
+            "Este proyecto": "Cubierto + contexto macro + geografía",
+        },
+        {
+            "Técnica": "Clasificación binaria (RF, XGBoost, LogReg)",
+            "Kaggle (60+ notebooks)": "Estándar en ~80% de notebooks",
+            "Este proyecto": f"CatBoost + calibración {best_calibration} (ECE={final.get('ece', 0):.4f})",
+        },
+        {
+            "Técnica": "SHAP / explicabilidad",
+            "Kaggle (60+ notebooks)": "1-2 notebooks en detalle",
+            "Este proyecto": "Cubierto en NB03 + Streamlit",
+        },
+        {
+            "Técnica": "Validación out-of-time",
+            "Kaggle (60+ notebooks)": "Ninguno (todos usan random split)",
+            "Este proyecto": "Split temporal 2007-2017 / 2017 / 2018-2020",
+        },
+        {
+            "Técnica": "WOE/IV feature engineering",
+            "Kaggle (60+ notebooks)": "Ninguno",
+            "Este proyecto": "OptBinning con supervisión monotónica",
+        },
+        {
+            "Técnica": "Calibración de probabilidades",
+            "Kaggle (60+ notebooks)": "Ninguno",
+            "Este proyecto": "Platt vs Isotonic vs Venn-Abers",
+        },
+        {
+            "Técnica": "Conformal prediction",
+            "Kaggle (60+ notebooks)": "Ninguno",
+            "Este proyecto": "MAPIE Mondrian con cobertura garantizada",
+        },
+        {
+            "Técnica": "Survival analysis",
+            "Kaggle (60+ notebooks)": "Ninguno",
+            "Este proyecto": "Cox PH + RSF para PD lifetime",
+        },
+        {
+            "Técnica": "Inferencia causal",
+            "Kaggle (60+ notebooks)": "Ninguno",
+            "Este proyecto": "DML + Causal Forest (ATE + CATE)",
+        },
+        {
+            "Técnica": "Portfolio optimization",
+            "Kaggle (60+ notebooks)": "Ninguno (1 notebook con threshold simple)",
+            "Este proyecto": "Pyomo/HiGHS robusta con uncertainty sets",
+        },
+        {
+            "Técnica": "IFRS9 / ECL / staging",
+            "Kaggle (60+ notebooks)": "Ninguno",
+            "Este proyecto": "4 escenarios + sensibilidad + conformal SICR",
+        },
+        {
+            "Técnica": "Predict-then-optimize",
+            "Kaggle (60+ notebooks)": "Ninguno",
+            "Este proyecto": "Pipeline completo PD → Conformal → Pyomo",
+        },
     ]
 )
-st.dataframe(diff_data, use_container_width=True, hide_index=True, height=460)
+st.dataframe(diff_data, width="stretch", hide_index=True, height=460)
 st.info(
     "**Conclusión:** Las técnicas que definen este proyecto — conformal prediction, optimización robusta, "
     "causalidad, survival analysis, IFRS9 y el pipeline predict-then-optimize — no aparecen en ningún "
@@ -262,6 +386,13 @@ decisiones robustas de cartera bajo restricciones reales. La aportación del pro
 demostrar cómo integrar técnicas poco combinadas en una misma cadena de valor para riesgo de crédito aplicado.
 """
 )
+render_caveats(
+    [
+        "La comparación con Kaggle muestra diferenciación metodológica, no necesariamente superiority universal en cualquier cartera.",
+        "La complementariedad depende de que los artefactos upstream se mantengan calibrados y gobernados.",
+    ]
+)
+render_page_feedback("thesis_defense")
 
 next_page_teaser(
     "Historia de Datos",

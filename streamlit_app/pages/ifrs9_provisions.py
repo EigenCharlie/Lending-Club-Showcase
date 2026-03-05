@@ -16,16 +16,38 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from streamlit_app.components.audience_toggle import audience_selector
+from streamlit_app.components.context_help import methodology_dialog, term_popover
+from streamlit_app.components.decision_panels import decision_checklist, tradeoff_panel
+from streamlit_app.components.dvc_kpi_spine import render_global_kpi_spine
 from streamlit_app.components.metric_cards import kpi_row
 from streamlit_app.components.narrative import narrative_block, next_page_teaser, storytelling_intro
+from streamlit_app.components.story_shell import (
+    render_caveats,
+    render_decision_box,
+    render_key_takeaway,
+    render_page_feedback,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
-from streamlit_app.utils import format_number, get_notebook_image_path, load_parquet, try_load_parquet
+from streamlit_app.utils import (
+    format_number,
+    get_notebook_image_path,
+    load_parquet,
+    try_load_parquet,
+)
 
 st.title("🏦 Provisiones IFRS9")
 st.caption(
     "Estimación de ECL por stage, grade y escenario macroeconómico. "
     "Incluye sensibilidad PD/LGD y lectura de riesgo regulatorio."
 )
+page_contract = get_page_contract("ifrs9_provisions")
+render_page_header(page_contract)
+render_key_takeaway(
+    "IFRS9 no es un cálculo aislado: es la traducción contable de PD, incertidumbre y horizonte temporal en provisiones defendibles."
+)
+term_popover("canónico", label="Snapshot canónico y consistencia IFRS9")
 
 audience = audience_selector()
 
@@ -50,6 +72,32 @@ storytelling_intro(
         "Comparar ECL baseline vs severe y shares por stage.",
         "Usar sensibilidad PD/LGD para evaluar resiliencia de capital.",
     ],
+)
+render_decision_box(
+    "Definir baseline de provisión y buffer bajo severe usando métricas canónicas compartidas con el resto del pipeline.",
+    owner="Finanzas / Riesgo",
+    cadence="cierre mensual",
+)
+render_global_kpi_spine("ifrs9")
+tradeoff_panel(
+    "Trade-off IFRS9",
+    upside="Mayor prudencia y resiliencia contable ante deterioro macro.",
+    downside="Más provisión impacta P&L y métricas de rentabilidad en el corto plazo.",
+    monitoring="ECL baseline, ECL severe, uplift severe, shares por stage y sensibilidad PD×LGD.",
+    color="#FFF7ED",
+)
+methodology_dialog(
+    "Cómo leer el uplift severe",
+    """
+`ifrs9.severe_uplift_pct` resume cuánto crece la provisión total al pasar de baseline a escenario severe.
+
+Lectura:
+- alto uplift -> alta sensibilidad del portafolio al shock macro y/o a la calidad de los segmentos.
+- bajo uplift -> mayor resiliencia, o menor severidad relativa del escenario.
+
+No reemplaza el análisis por stage ni por grade; es un KPI de síntesis.
+""",
+    button_label="Ver interpretación del uplift severe",
 )
 
 # ── IFRS9 for Non-Accountants ──
@@ -111,9 +159,7 @@ ecl_comp = try_load_parquet("ifrs9_ecl_comparison")
 if ecl_comp.empty:
     baseline_by_grade = scenario_grade[scenario_grade["scenario"] == "baseline"].copy()
     if baseline_by_grade.empty:
-        ecl_comp = pd.DataFrame(
-            columns=["Grade", "ECL_Stage1", "ECL_Stage2", "Stage2/Stage1"]
-        )
+        ecl_comp = pd.DataFrame(columns=["Grade", "ECL_Stage1", "ECL_Stage2", "Stage2/Stage1"])
     else:
         stage1_proxy = baseline_by_grade["total_ecl"] * (
             1.0 - baseline_by_grade["stage2_share"] - baseline_by_grade["stage3_share"]
@@ -128,9 +174,7 @@ if ecl_comp.empty:
                 "ECL_Stage2": stage2_proxy.clip(lower=0.0),
             }
         )
-        ecl_comp["Stage2/Stage1"] = (
-            ecl_comp["ECL_Stage2"] / (ecl_comp["ECL_Stage1"] + 1e-9)
-        )
+        ecl_comp["Stage2/Stage1"] = ecl_comp["ECL_Stage2"] / (ecl_comp["ECL_Stage1"] + 1e-9)
 
 if scenarios.empty:
     base = {"total_ecl": 0.0, "stage2_share": 0.0, "stage3_share": 0.0}
@@ -138,21 +182,11 @@ if scenarios.empty:
 else:
     base_rows = scenarios[scenarios["scenario"] == "baseline"]
     severe_rows = scenarios[scenarios["scenario"] == "severe"]
-    base = (
-        base_rows.iloc[0]
-        if not base_rows.empty
-        else scenarios.iloc[0]
-    )
-    severe = (
-        severe_rows.iloc[0]
-        if not severe_rows.empty
-        else scenarios.iloc[-1]
-    )
+    base = base_rows.iloc[0] if not base_rows.empty else scenarios.iloc[0]
+    severe = severe_rows.iloc[0] if not severe_rows.empty else scenarios.iloc[-1]
 
 if input_quality.empty:
-    input_quality = pd.DataFrame(
-        [{"n_rows": 0, "pd_current_mean": 0.0, "pd_orig_mean": 0.0}]
-    )
+    input_quality = pd.DataFrame([{"n_rows": 0, "pd_current_mean": 0.0, "pd_orig_mean": 0.0}])
 
 kpi_row(
     [
@@ -186,7 +220,7 @@ st.dataframe(
             },
         ]
     ),
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
 )
 
@@ -208,7 +242,9 @@ with col_nb_img:
             caption="Notebook 09: distribución de stages y rango ECL con señal conformal.",
         )
     else:
-        stage_fallback = scenarios[["scenario", "stage1_share", "stage2_share", "stage3_share"]].copy()
+        stage_fallback = scenarios[
+            ["scenario", "stage1_share", "stage2_share", "stage3_share"]
+        ].copy()
         stage_long = stage_fallback.melt(
             id_vars=["scenario"],
             value_vars=["stage1_share", "stage2_share", "stage3_share"],
@@ -224,8 +260,10 @@ with col_nb_img:
             labels={"scenario": "Escenario", "share": "Participación"},
         )
         fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=320, yaxis={"tickformat": ".0%"})
-        st.plotly_chart(fig, use_container_width=True)
-        st.caption("Imagen de notebook no encontrada; se muestra fallback construido desde escenarios IFRS9.")
+        st.plotly_chart(fig, width="stretch")
+        st.caption(
+            "Imagen de notebook no encontrada; se muestra fallback construido desde escenarios IFRS9."
+        )
 with col_nb_text:
     st.markdown(
         """
@@ -274,7 +312,7 @@ fig.update_layout(
     yaxis_title="ECL (USD)",
     height=430,
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 st.caption(
     "Propósito: separar provisión 12m vs lifetime por grade. Insight: Stage 2 concentra la mayor presión de capital en "
     "segmentos de mayor riesgo."
@@ -299,7 +337,9 @@ if "Stage2/Stage1" in ecl_comp.columns:
 
 st.subheader("2) Escenarios macro: baseline a severe")
 if scenarios.empty:
-    st.info("No hay `ifrs9_scenario_summary.parquet` disponible. Se omite comparación de escenarios.")
+    st.info(
+        "No hay `ifrs9_scenario_summary.parquet` disponible. Se omite comparación de escenarios."
+    )
 else:
     col1, col2 = st.columns(2)
     with col1:
@@ -312,7 +352,7 @@ else:
             labels={"scenario": "Escenario", "total_ecl": "ECL total (USD)"},
         )
         fig.update_layout(**PLOTLY_TEMPLATE["layout"], showlegend=False, height=390)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         st.caption(
             "Propósito: cuantificar sensibilidad macro de ECL total. Insight: el salto baseline->severe muestra vulnerabilidad "
             "de reservas ante estrés."
@@ -335,7 +375,7 @@ else:
         )
         fig.update_layout(**PLOTLY_TEMPLATE["layout"])
         fig.update_layout(yaxis={"tickformat": ".0%"}, height=390)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         st.caption(
             "Propósito: visualizar migración de stages por escenario. Insight: el aumento de Stage 2/3 explica gran parte del uplift "
             "de provisiones."
@@ -372,7 +412,7 @@ with col3:
             labels={"x": "LGD mult", "y": "PD mult", "color": "ECL"},
         )
         fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         st.caption(
             "Propósito: medir elasticidad de ECL ante shocks de PD y LGD. Insight: permite construir mapas de materialidad para "
             "stress testing interno."
@@ -391,7 +431,7 @@ with col4:
             labels={"x": "Escenario", "y": "Grade", "color": "ECL promedio"},
         )
         fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=390)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         st.caption(
             "Propósito: identificar segmentos más sensibles al escenario macro. Insight: grades bajos presentan mayor incremento "
             "de ECL relativo."
@@ -413,11 +453,21 @@ st.subheader("4) Definiciones IFRS9 usadas en el proyecto")
 defs = pd.DataFrame(
     [
         {"Stage": "1", "Trigger": "Sin SICR", "PD usada": "12 meses", "Horizonte ECL": "12 meses"},
-        {"Stage": "2", "Trigger": "SICR detectado", "PD usada": "Lifetime", "Horizonte ECL": "Vida remanente"},
-        {"Stage": "3", "Trigger": "Deterioro / default", "PD usada": "≈1.0", "Horizonte ECL": "Pérdida total esperada"},
+        {
+            "Stage": "2",
+            "Trigger": "SICR detectado",
+            "PD usada": "Lifetime",
+            "Horizonte ECL": "Vida remanente",
+        },
+        {
+            "Stage": "3",
+            "Trigger": "Deterioro / default",
+            "PD usada": "≈1.0",
+            "Horizonte ECL": "Pérdida total esperada",
+        },
     ]
 )
-st.dataframe(defs, use_container_width=True, hide_index=True)
+st.dataframe(defs, width="stretch", hide_index=True)
 
 st.markdown(
     """
@@ -434,6 +484,22 @@ Si la PD está mejor calibrada y la incertidumbre está explícitamente cuantifi
 técnicamente y más útil para planificación prudencial bajo escenarios macro.
 """
 )
+decision_checklist(
+    "Checklist para comité IFRS9",
+    [
+        "Comparar ECL baseline vs severe y acordar buffer prudencial explícito.",
+        "Revisar concentración de ECL por stage/grade para planes de mitigación.",
+        "Confirmar que supuestos PD/LGD y señales SICR estén documentados y trazables.",
+    ],
+)
+render_caveats(
+    [
+        "Las provisiones dependen de supuestos de escenario y multiplicadores PD/LGD, no solo del modelo base.",
+        "El uso de señal conformal como apoyo SICR es útil pero no sustituye políticas regulatorias formales.",
+        "Los KPIs agregados deben complementarse con lectura por stage y por segmento.",
+    ]
+)
+render_page_feedback("ifrs9_provisions")
 
 next_page_teaser(
     "Gobernanza del Modelo",

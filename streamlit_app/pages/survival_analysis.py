@@ -17,6 +17,13 @@ import streamlit as st
 
 from streamlit_app.components.metric_cards import kpi_row
 from streamlit_app.components.narrative import next_page_teaser, storytelling_intro
+from streamlit_app.components.story_shell import (
+    render_caveats,
+    render_key_takeaway,
+    render_page_feedback,
+    render_page_header,
+)
+from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.utils import get_notebook_image_path, load_json, load_parquet, try_load_parquet
 
@@ -24,6 +31,11 @@ st.title("⏳ Análisis de Supervivencia")
 st.caption(
     "Modelamos tiempo hasta incumplimiento para complementar la PD puntual "
     "con una visión temporal útil en IFRS9 y gestión de ciclo de vida."
+)
+page_contract = get_page_contract("survival_analysis")
+render_page_header(page_contract)
+render_key_takeaway(
+    "La PD puntual responde 'quién'; supervivencia añade 'cuándo', que es crucial para provisión lifetime y priorización preventiva."
 )
 storytelling_intro(
     page_goal=(
@@ -71,8 +83,8 @@ estimar cuánto provisionar para la vida completa del préstamo.
 
 | Modelo | Tipo | C-index | Ventaja |
 |--------|------|---------|---------|
-| **Cox PH** | Semi-paramétrico | {survival.get('cox_concordance', 0):.4f} | Interpretable (hazard ratios) |
-| **RSF** | Ensemble (Random Survival Forest) | {survival.get('rsf_concordance', 0):.4f} | Captura no-linealidades |
+| **Cox PH** | Semi-paramétrico | {survival.get("cox_concordance", 0):.4f} | Interpretable (hazard ratios) |
+| **RSF** | Ensemble (Random Survival Forest) | {survival.get("rsf_concordance", 0):.4f} | Captura no-linealidades |
 
 **C-index** = probabilidad de que el modelo ordene correctamente qué préstamo hace
 default primero. 0.5 = aleatorio, 1.0 = perfecto.
@@ -122,7 +134,10 @@ kpi_row(
         {"label": "C-index Cox", "value": f"{survival.get('cox_concordance', 0):.4f}"},
         {"label": "C-index RSF", "value": f"{survival.get('rsf_concordance', 0):.4f}"},
         {"label": "Horizonte", "value": "60 meses"},
-        {"label": "Evento observado", "value": f"{summary.get('dataset', {}).get('event_rate', 0.185) * 100:.1f}%"},
+        {
+            "label": "Evento observado",
+            "value": f"{summary.get('dataset', {}).get('event_rate', 0.185) * 100:.1f}%",
+        },
     ]
 )
 
@@ -146,7 +161,7 @@ st.dataframe(
             },
         ]
     ),
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
 )
 
@@ -176,7 +191,7 @@ fig.update_layout(
     yaxis={"tickformat": ".0%"},
     height=470,
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 st.caption(
     "Propósito: estimar probabilidad de no default a lo largo del tiempo. Insight: la separación entre curvas por grade "
     "muestra diferencias estructurales en velocidad de deterioro."
@@ -211,7 +226,7 @@ fig.update_layout(
     xaxis_title="Hazard ratio exp(coef)",
     height=420,
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 st.caption(
     "Propósito: cuantificar efecto multiplicativo de cada driver sobre el riesgo instantáneo. Insight: HR>1 acelera default; "
     "HR<1 protege temporalmente la cartera."
@@ -234,7 +249,7 @@ else:
     )
     fig.update_layout(**PLOTLY_TEMPLATE["layout"])
     fig.update_layout(yaxis={"tickformat": ".0%"}, height=420)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         "Propósito: proyectar PD acumulada por horizonte y grade. Insight: curvas más inclinadas implican mayor presión de provisión "
         "lifetime en IFRS9."
@@ -258,7 +273,7 @@ capa temporal se integra explícitamente con causalidad e IFRS9 en el flujo comp
 
 with st.expander("Nota metodológica: supuesto de hazards proporcionales"):
     st.markdown(
-        """
+        f"""
 **Observación**: El test de residuos de Schoenfeld (NB06) identifica 8 variables cuyo efecto sobre el hazard
 no es constante en el tiempo, incluyendo `int_rate`, `dti` y `term`. Esto indica que el supuesto de **hazards
 proporcionales** del modelo Cox PH no se cumple estrictamente.
@@ -313,6 +328,14 @@ complementan con la información causal (NB07) para diseñar acciones
 de retención temprana en los segmentos de mayor pendiente.
 """
     )
+
+render_caveats(
+    [
+        "Las conclusiones temporales dependen del modelo elegido (Cox/RSF) y de la estabilidad del proceso de pagos.",
+        "Las curvas lifetime deben leerse junto con PD calibrada y contexto macro, no de forma aislada.",
+    ]
+)
+render_page_feedback("survival_analysis")
 
 next_page_teaser(
     "Inteligencia Causal",
