@@ -1,0 +1,60 @@
+{
+  "schema_version": "2026-03-07.1",
+  "generated_at_utc": "2026-03-13T12:04:41.396443+00:00",
+  "run_tag": "champion-2026-03-12-mega-definitive",
+  "dataset_scope": "full_data",
+  "treatment": "int_rate",
+  "treatment_unit": "percentage_points",
+  "identified_estimand": "Estimand type: EstimandType.NONPARAMETRIC_ATE\n\n### Estimand : 1\nEstimand name: backdoor\nNo such variable(s) found!\n\n### Estimand : 2\nEstimand name: iv\nNo such variable(s) found!\n\n### Estimand : 3\nEstimand name: frontdoor\nNo such variable(s) found!\n\n### Estimand : 4\nEstimand name: general_adjustment\nNo such variable(s) found!\n",
+  "identification_strategy": "backdoor",
+  "ate": 0.009745774723713147,
+  "ate_ci": [
+    -0.03305228636403833,
+    0.052543835811464615
+  ],
+  "cate_mean": 0.009745774723713147,
+  "cate_std": 0.02108990245320693,
+  "effect_modifiers": [
+    "loan_amnt",
+    "annual_inc",
+    "dti"
+  ],
+  "confounders": [
+    "grade_woe",
+    "home_ownership_woe"
+  ],
+  "refutation_summary": [
+    {
+      "test": "placebo_treatment",
+      "estimated_effect": null,
+      "new_effect": null,
+      "p_value": null,
+      "result": "refutation_unavailable: Aborting refutation! No valid estimate is provided."
+    },
+    {
+      "test": "random_common_cause",
+      "estimated_effect": null,
+      "new_effect": null,
+      "p_value": null,
+      "result": "refutation_unavailable: Aborting refutation! No valid estimate is provided."
+    },
+    {
+      "test": "data_subset",
+      "estimated_effect": null,
+      "new_effect": null,
+      "p_value": null,
+      "result": "refutation_unavailable: Aborting refutation! No valid estimate is provided."
+    }
+  ],
+  "n_obs": 1346311,
+  "source_train_split": "data/processed/train_fe.parquet",
+  "source_test_split": "data/processed/test_fe.parquet",
+  "cate_artifact_path": "data/processed/cate_estimates.parquet",
+  "oot_cate_artifact_path": "data/processed/cate_estimates_oot.parquet",
+  "overlap_artifact_path": "data/processed/causal_overlap_diagnostics.parquet",
+  "official_method": {
+    "identification": "DoWhy backdoor identification/refutation",
+    "heterogeneity": "EconML CausalForestDML",
+    "policy_semantics": "local_cate_policy_simulation"
+  }
+}

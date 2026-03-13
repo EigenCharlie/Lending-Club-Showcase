@@ -1,34 +1,41 @@
 {
+  "generated_at": "2026-03-13T12:31:39.649642+00:00",
   "hardware": {
     "gpu": "NVIDIA GeForce RTX 3080",
-    "vram_mb": 10240,
-    "cpu": "AMD Ryzen 5 5600X",
-    "ram_gb": 24,
-    "platform": "WSL2",
-    "driver": "595.71",
-    "graphics_clock_mhz": 210,
-    "temperature_c": 48,
-    "gpu_utilization_pct": 2,
-    "memory_used_mb": 1066,
-    "memory_total_mb_reported": 10240,
-    "wsl_free_m": "               total        used        free      shared  buff/cache   available\nMem:           26049        2801       22269           3         895       23247\nSwap:          16384        1941       14442\n"
+    "vram": "10 GB GDDR6X",
+    "cpu": "AMD Ryzen 5 5600X (6-core)",
+    "ram": "24 GB DDR4",
+    "os": "Linux / WSL2"
   },
-  "versions": {
-    "cudf": "not installed",
-    "cuml": "not installed",
-    "cugraph": "not installed",
-    "cuopt": "not installed",
-    "cupy": "not installed",
-    "polars": "1.38.1",
-    "duckdb": "1.4.4",
-    "pandas": "2.3.3",
-    "numpy": "2.4.2",
+  "library_versions": {
+    "networkx": "3.6.1",
     "scipy": "1.15.3",
-    "sklearn": "1.8.0"
+    "sklearn": "1.8.0",
+    "polars": "1.38.1",
+    "pandas": "2.3.3",
+    "duckdb": "1.4.4",
+    "narwhals": "2.17.0"
   },
   "config": {
-    "profile": "current",
-    "repeats": 3,
-    "warmup": 1
+    "seed": 42,
+    "save_outputs": true,
+    "cudf_repeats": 4,
+    "cudf_warmup": 1,
+    "cuml_train_sample": 250000,
+    "cuml_test_sample": 100000,
+    "cuml_repeats_light": 2,
+    "cuml_repeats_heavy": 1,
+    "cugraph_sample_rows": 50000,
+    "cugraph_repeats": 3,
+    "cuopt_sample_rows": 18000,
+    "cuopt_repeats": 3,
+    "cupy_repeats": 3,
+    "cupy_warmup": 1,
+    "consistency_rel_tol": 0.005,
+    "plot_per_method_charts": true
+  },
+  "datasets": {
+    "train_rows": 1346311,
+    "test_rows": 276869
   }
 }

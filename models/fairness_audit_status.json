@@ -1,55 +1,117 @@
 {
-  "schema_version": "2026-03-04.1",
-  "generated_at_utc": "2026-03-05T00:52:31.843764+00:00",
-  "run_tag": "2026-03-04-C-core-balanced-cert2",
+  "schema_version": "2026-03-06.1",
+  "generated_at_utc": "2026-03-13T12:06:08.286297+00:00",
+  "run_tag": "champion-2026-03-12-mega-definitive",
   "overall_pass": true,
-  "n_attributes": 3,
-  "n_passed": 3,
+  "n_attributes": 6,
+  "n_base_attributes": 3,
+  "n_intersectional_attributes": 3,
+  "n_passed": 6,
   "attributes": [
     {
       "attribute": "home_ownership",
-      "dpd": 0.04346886685782536,
-      "eo_gap": 0.08591165502982334,
-      "dir": 0.955876778131965,
-      "tpr_gap": 0.0238214297727537,
-      "fpr_gap": 0.08591165502982334,
+      "dpd": 0.0032747927896598084,
+      "eo_gap": 0.008859397417503634,
+      "dir": 0.99672520721034,
+      "tpr_gap": 0.0012163198392342034,
+      "fpr_gap": 0.008859397417503634,
       "passed_dpd": true,
       "passed_eo": true,
       "passed_dir": true,
-      "passed_all": true
+      "passed_all": true,
+      "attribute_type": "base"
     },
     {
       "attribute": "annual_inc_quartile",
-      "dpd": 0.03673023694264166,
-      "eo_gap": 0.07147811200036613,
-      "dir": 0.9628536557842962,
-      "tpr_gap": 0.02176538331821265,
-      "fpr_gap": 0.07147811200036613,
+      "dpd": 0.0027092378240209936,
+      "eo_gap": 0.007509332092867194,
+      "dir": 0.997290447239876,
+      "tpr_gap": 0.0009946042551526313,
+      "fpr_gap": 0.007509332092867194,
       "passed_dpd": true,
       "passed_eo": true,
       "passed_dir": true,
-      "passed_all": true
+      "passed_all": true,
+      "attribute_type": "base"
     },
     {
       "attribute": "verification_status",
-      "dpd": 0.05975307621919457,
-      "eo_gap": 0.09683751578301358,
-      "dir": 0.9392854333012749,
-      "tpr_gap": 0.03825462261153334,
-      "fpr_gap": 0.09683751578301358,
+      "dpd": 0.0044126921500731164,
+      "eo_gap": 0.010230987806124081,
+      "dir": 0.9955849534138105,
+      "tpr_gap": 0.001868877784102052,
+      "fpr_gap": 0.010230987806124081,
       "passed_dpd": true,
       "passed_eo": true,
       "passed_dir": true,
-      "passed_all": true
+      "passed_all": true,
+      "attribute_type": "base"
+    },
+    {
+      "attribute": "home_ownership__x__annual_inc_quartile",
+      "dpd": 0.004887023515207312,
+      "eo_gap": 0.012989608313349277,
+      "dir": 0.9951129764847925,
+      "tpr_gap": 0.001930956529929806,
+      "fpr_gap": 0.012989608313349277,
+      "passed_dpd": true,
+      "passed_eo": true,
+      "passed_dir": true,
+      "passed_all": true,
+      "attribute_type": "intersectional"
+    },
+    {
+      "attribute": "home_ownership__x__verification_status",
+      "dpd": 0.013175152020984848,
+      "eo_gap": 0.02572245157192765,
+      "dir": 0.9868248479790149,
+      "tpr_gap": 0.005631920580374206,
+      "fpr_gap": 0.02572245157192765,
+      "passed_dpd": true,
+      "passed_eo": true,
+      "passed_dir": true,
+      "passed_all": true,
+      "attribute_type": "intersectional"
+    },
+    {
+      "attribute": "annual_inc_quartile__x__verification_status",
+      "dpd": 0.007572595551845418,
+      "eo_gap": 0.016483516483516536,
+      "dir": 0.9924274044481544,
+      "tpr_gap": 0.003271151975952624,
+      "fpr_gap": 0.016483516483516536,
+      "passed_dpd": true,
+      "passed_eo": true,
+      "passed_dir": true,
+      "passed_all": true,
+      "attribute_type": "intersectional"
     }
   ],
-  "prediction_threshold": 0.5,
-  "prediction_threshold_source": "policy_default",
+  "prediction_threshold": 0.35,
+  "primary_threshold": 0.35,
+  "prediction_threshold_source": "decision_policy_artifact_auto_selected",
   "outcome_mode": "approval",
   "thresholds": {
     "dpd": 0.1,
     "eo_gap": 0.11,
     "dir": 0.8
+  },
+  "threshold_frontier": {
+    "path": "data/processed/fairness_threshold_frontier.parquet",
+    "thresholds": [
+      0.35,
+      0.4,
+      0.45,
+      0.5
+    ],
+    "worst_primary_attribute": "home_ownership__x__verification_status",
+    "selected_threshold": 0.35,
+    "all_primary_pass": true
+  },
+  "decision_policy": {
+    "path": "models/fairness_decision_policy.json",
+    "global_threshold": 0.35,
+    "n_overrides": 0
   },
   "policy_config": "configs/fairness_policy.yaml"
 }

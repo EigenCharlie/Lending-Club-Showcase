@@ -13,6 +13,7 @@ from streamlit_app.components.story_shell import (
     render_page_header,
 )
 from streamlit_app.content.page_contracts import get_page_contract
+from streamlit_app.utils import try_load_json
 
 
 def _safe_page_link(page_path: str, label: str, icon: str) -> None:
@@ -33,6 +34,12 @@ render_page_header(page_contract)
 render_key_takeaway(
     "Esta página debe leerse como registro maestro de posicionamiento académico: concentra el mapa temático y reduce duplicación entre los drafts de paper."
 )
+_causal_status = try_load_json("causal_effect_status", directory="models", default={})
+_causal_ate = _causal_status.get("ate")
+try:
+    _causal_ate_text = f"{float(_causal_ate):+.3f}pp"
+except Exception:
+    _causal_ate_text = "ATE artefact-driven"
 
 st.markdown(
     """
@@ -371,14 +378,14 @@ with st.expander("Papers clave"):
 st.subheader("6) Inferencia Causal en crédito")
 
 st.markdown(
-    """
+    f"""
 La correlación entre tasa de interés y default no implica causalidad — borrowers de
-mayor riesgo reciben tasas más altas (selection bias). **Double/Debiased ML** (DML)
-y **Causal Forests** permiten estimar efectos causales heterogéneos eliminando el
-sesgo de confusión con garantías semiparamétricas.
+mayor riesgo reciben tasas más altas (selection bias). En el pipeline oficial usamos
+**DoWhy** para identificación/refutación backdoor y **CausalForestDML** para efectos
+heterogéneos, separando el claim causal canónico del notebook exploratorio.
 
-En nuestro proyecto: ATE estimado = +1pp en tasa → **+0.787pp en probabilidad de
-default**, con efectos heterogéneos por grade y DTI.
+En el snapshot oficial del proyecto: ATE estimado = +1pp en tasa → **{_causal_ate_text}
+en probabilidad de default**, con heterogeneidad observable por grade y DTI.
 """
 )
 
@@ -436,12 +443,17 @@ st.subheader("8) Series de Tiempo en crédito")
 st.markdown(
     """
 El forecasting de tasas de default agregadas conecta el riesgo individual con
-el riesgo sistémico. Modelos como ARIMA capturan tendencias y estacionalidad,
-mientras que LightGBM (via Nixtla mlforecast) incorpora features macroeconómicas.
+el riesgo sistémico. Modelos clásicos como ARIMA/ETS/Theta siguen siendo una
+línea base fuerte para series cortas; híbridos STL+CatBoost y modelos globales
+de panel aportan valor cuando existe suficiente estructura cross-series. En este
+proyecto, las covariables macro o exógenas solo son defendibles si existe un
+contrato explícito de futuro; sin ese artefacto, la narrativa oficial del
+forecast debe ser univariada.
 
-Los **intervalos conformal para time series** son un área activa: la violación de
-exchangeability en datos temporales degrada la cobertura, motivando enfoques
-como **Adaptive Conformal Inference (ACI)** de Gibbs & Candès (2021).
+Los **intervalos conformal para time series** siguen siendo un área activa: la
+violación de exchangeability en datos temporales degrada la cobertura, por lo que
+intervalos estadísticos bien calibrados suelen ser la referencia oficial mientras
+ACI, EnbPI y variantes online se evalúan como research backlog.
 """
 )
 

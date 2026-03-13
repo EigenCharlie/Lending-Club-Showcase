@@ -31,12 +31,16 @@
     "rows": 118,
     "cols": 9
   },
+  "data/processed/time_series_full.parquet": {
+    "rows": 160,
+    "cols": 10
+  },
+  "data/processed/time_series_panel.parquet": {
+    "rows": 3011,
+    "cols": 13
+  },
   "data/processed/ead_dataset.parquet": {
     "rows": 249380,
     "cols": 123
-  },
-  "data/processed/obt_loan_features.parquet": {
-    "rows": 1346311,
-    "cols": 27
   }
 }

@@ -1,79 +1,135 @@
 {
-  "run_tag": "2026-03-04-C-core-balanced-cert2",
+  "run_tag": "champion-2026-03-12-mega-definitive",
   "pipeline": {
     "batch_size": 276869,
-    "pd_mean": 0.21414937518744812,
-    "pd_auc": 0.7150471661279162,
-    "interval_width_mean": 0.7857954176621972,
+    "pd_mean": 0.21658084621969373,
+    "pd_auc": 0.7127913494994733,
+    "interval_width_mean": 0.7549591277777552,
     "stages": {
-      "S1": 94459,
-      "S2": 120159,
+      "S1": 88358,
+      "S2": 126260,
       "S3": 62251
     },
-    "ecl_expected": 973065001.8190181,
-    "ecl_conservative": 1784305820.3563762,
-    "ecl_range": 811240818.537358,
-    "robust_return": 3287.718476357372,
-    "robust_funded": 15,
-    "nonrobust_return": 129841.22089600161,
-    "nonrobust_funded": 239,
-    "price_of_robustness": 126553.50241964424,
+    "ecl_expected": 998855536.404284,
+    "ecl_conservative": 1802272153.6204371,
+    "ecl_range": 803416617.2161531,
+    "robust_return": 169490.52711864203,
+    "robust_funded": 300,
+    "nonrobust_return": 82483.17723140352,
+    "nonrobust_funded": 155,
+    "price_of_robustness": -87007.34988723851,
     "pipeline_time_s": 274.79
   },
   "pd_model": {
-    "final_auc": 0.7150471661279162,
-    "final_gini": 0.4300943322558324,
-    "final_brier": 0.15422581299834165,
-    "final_ece": 0.008555414708059851,
-    "final_d2_brier": 0.10059934675422688,
+    "final_auc": 0.7127913494994733,
+    "final_gini": 0.42558269899894663,
+    "final_brier": 0.15453854630270586,
+    "final_ece": 0.006247440054484605,
+    "final_d2_brier": 0.09877557592904151,
     "calibration_method": "Isotonic Regression"
   },
   "conformal": {
-    "coverage_90": 0.9137028703105079,
-    "coverage_95": 0.9488241731649264,
+    "coverage_90": 0.9256832653709878,
+    "coverage_95": 0.9515836009087331,
     "overall_pass": false,
     "n_checks_passed": 8
   },
   "survival": {
-    "cox_concordance": 0.6623349579970055,
-    "rsf_concordance": 0.6569157031063898
+    "cox_concordance": 0.6643376647992065,
+    "rsf_concordance": 0.679658583356981
   },
   "dataset": {
-    "n_loans": 125754,
-    "n_events": 24184,
-    "event_rate": 0.19231197417179574
+    "n_loans": 674964,
+    "n_events": 129052,
+    "event_rate": 0.1911983453932358
+  },
+  "causal": {
+    "ate": 0.009745774723713147,
+    "ate_ci": [
+      -0.03305228636403833,
+      0.052543835811464615
+    ],
+    "cate_mean": 0.009745774723713147,
+    "cate_std": 0.02108990245320693,
+    "selected_rule": "high_plus_medium_positive",
+    "total_net_value": 41725764.28056455,
+    "bootstrap_p05_net": 41601215.06759128,
+    "avg_action_rate": 0.256981673192383,
+    "oot_p05_monthly_net": 2616.5367493968442,
+    "official_method": {
+      "identification": "DoWhy backdoor identification/refutation",
+      "heterogeneity": "EconML CausalForestDML",
+      "policy_semantics": "local_cate_policy_simulation"
+    },
+    "run_tag_coherence": {
+      "expected_run_tag": "champion-2026-03-12-mega-definitive",
+      "observed_run_tags": [
+        "champion-2026-03-12-mega-definitive"
+      ],
+      "observed_by_artifact": {
+        "causal_effect_status": "champion-2026-03-12-mega-definitive",
+        "causal_policy_rule": "champion-2026-03-12-mega-definitive",
+        "causal_policy_oot_status": "champion-2026-03-12-mega-definitive",
+        "cate_portfolio_status": "champion-2026-03-12-mega-definitive"
+      },
+      "missing_run_tag_artifacts": [],
+      "mismatched_artifacts": [],
+      "coherent": true
+    }
+  },
+  "explainability": {
+    "top_global_drivers": [
+      "int_rate",
+      "term",
+      "home_ownership",
+      "fico_score",
+      "dti"
+    ],
+    "n_global_features": 42,
+    "n_local_cases": 4,
+    "n_ale_features": 7
   },
   "flattened_summary": {
-    "pd_auc": 0.7150471661279162,
-    "pd_gini": 0.4300943322558324,
-    "pd_brier": 0.15422581299834165,
-    "pd_ece": 0.008555414708059851,
-    "pd_d2_brier": 0.10059934675422688,
+    "pd_auc": 0.7127913494994733,
+    "pd_gini": 0.42558269899894663,
+    "pd_brier": 0.15453854630270586,
+    "pd_ece": 0.006247440054484605,
+    "pd_d2_brier": 0.09877557592904151,
     "calibration_method": "Isotonic Regression",
-    "conformal_coverage_90": 0.9137028703105079,
-    "conformal_coverage_95": 0.9488241731649264,
+    "conformal_coverage_90": 0.9256832653709878,
+    "conformal_coverage_95": 0.9515836009087331,
     "conformal_overall_pass": false,
-    "survival_cox_concordance": 0.6623349579970055,
-    "survival_rsf_concordance": 0.6569157031063898,
-    "dataset_n_loans": 125754,
-    "dataset_n_events": 24184,
-    "dataset_event_rate": 0.19231197417179574
+    "survival_cox_concordance": 0.6643376647992065,
+    "survival_rsf_concordance": 0.679658583356981,
+    "dataset_n_loans": 674964,
+    "dataset_n_events": 129052,
+    "dataset_event_rate": 0.1911983453932358,
+    "causal_ate": 0.009745774723713147,
+    "causal_cate_mean": 0.009745774723713147,
+    "causal_total_net_value": 41725764.28056455,
+    "causal_bootstrap_p05_net": 41601215.06759128,
+    "causal_oot_p05_monthly_net": 2616.5367493968442
   },
-  "pd_auc": 0.7150471661279162,
-  "pd_gini": 0.4300943322558324,
-  "pd_brier": 0.15422581299834165,
-  "pd_ece": 0.008555414708059851,
-  "pd_d2_brier": 0.10059934675422688,
+  "pd_auc": 0.7127913494994733,
+  "pd_gini": 0.42558269899894663,
+  "pd_brier": 0.15453854630270586,
+  "pd_ece": 0.006247440054484605,
+  "pd_d2_brier": 0.09877557592904151,
   "calibration_method": "Isotonic Regression",
-  "conformal_coverage_90": 0.9137028703105079,
-  "conformal_coverage_95": 0.9488241731649264,
+  "conformal_coverage_90": 0.9256832653709878,
+  "conformal_coverage_95": 0.9515836009087331,
   "conformal_overall_pass": false,
-  "survival_cox_concordance": 0.6623349579970055,
-  "survival_rsf_concordance": 0.6569157031063898,
-  "dataset_n_loans": 125754,
-  "dataset_n_events": 24184,
-  "dataset_event_rate": 0.19231197417179574,
-  "schema_version": "2026-02-26.1",
-  "generated_at_utc": "2026-03-05T00:53:16.023325+00:00",
+  "survival_cox_concordance": 0.6643376647992065,
+  "survival_rsf_concordance": 0.679658583356981,
+  "dataset_n_loans": 674964,
+  "dataset_n_events": 129052,
+  "dataset_event_rate": 0.1911983453932358,
+  "causal_ate": 0.009745774723713147,
+  "causal_cate_mean": 0.009745774723713147,
+  "causal_total_net_value": 41725764.28056455,
+  "causal_bootstrap_p05_net": 41601215.06759128,
+  "causal_oot_p05_monthly_net": 2616.5367493968442,
+  "schema_version": "2026-03-06.1",
+  "generated_at_utc": "2026-03-13T12:07:01.209712+00:00",
   "dataset_scope": "full_data"
 }

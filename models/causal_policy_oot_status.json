@@ -1,0 +1,16 @@
+{
+  "schema_version": "2026-03-07.1",
+  "generated_at_utc": "2026-03-13T12:04:58.395794+00:00",
+  "run_tag": "champion-2026-03-12-mega-definitive",
+  "rule_name": "high_plus_medium_positive",
+  "min_history_months": 12,
+  "n_months_evaluated": 106,
+  "avg_action_rate": 0.256981673192383,
+  "total_net_value": 41703388.91233453,
+  "p05_monthly_net": 2616.5367493968442,
+  "worst_month": "2008-09-01 00:00:00",
+  "best_month": "2016-03-01 00:00:00",
+  "selected_rule_path": "models/causal_policy_rule.json",
+  "effect_status_path": "models/causal_effect_status.json",
+  "policy_semantics": "local_cate_policy_simulation"
+}

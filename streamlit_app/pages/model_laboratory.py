@@ -1,10 +1,11 @@
-"""Laboratorio de modelos PD: desempeño, calibración e interpretabilidad."""
+"""Laboratorio de modelos PD: desempeño, calibración y handoff interpretativo."""
 
 # ruff: noqa: E402
 
 from __future__ import annotations
 
 import importlib.metadata as importlib_metadata
+import json
 import re
 import sys
 from pathlib import Path
@@ -38,7 +39,11 @@ from streamlit_app.components.story_shell import (
 )
 from streamlit_app.content.page_contracts import get_page_contract
 from streamlit_app.theme import PLOTLY_TEMPLATE
-from streamlit_app.utils import get_notebook_image_path, load_json, load_parquet, try_load_parquet
+from streamlit_app.utils import (
+    get_notebook_image_path,
+    try_load_json,
+    try_load_parquet,
+)
 
 
 @st.cache_data(ttl=600, max_entries=1)
@@ -122,6 +127,15 @@ def prob_to_odds(prob: float) -> float:
     """Convert probability to odds with clipping near the boundaries."""
     p = min(max(float(prob), 1e-9), 1 - 1e-9)
     return p / (1 - p)
+
+
+def _parse_json_payload(value: object, default: object) -> object:
+    if value in (None, "", "nan"):
+        return default
+    try:
+        return json.loads(str(value))
+    except Exception:
+        return default
 
 
 def _echarts_model_auc_option(
@@ -237,7 +251,7 @@ def _plotly_model_auc_figure(
                 x=df["auc"],
                 y=df["model"],
                 orientation="h",
-                marker=dict(color=colors),
+                marker={"color": colors},
                 text=[f"{v:.4f}" for v in df["auc"].astype(float)],
                 textposition="outside",
                 customdata=customdata,
@@ -259,7 +273,9 @@ def _plotly_model_auc_figure(
 
 
 st.title("🔬 Laboratorio de Modelos")
-st.caption("Comparación de modelos PD, calibración y explicabilidad (SHAP).")
+st.caption(
+    "Comparación de modelos PD y calibración; la interpretabilidad detallada vive en su página dedicada."
+)
 page_contract = get_page_contract("model_laboratory")
 render_page_header(page_contract)
 render_key_takeaway(
@@ -284,7 +300,7 @@ storytelling_intro(
     how_to_read=[
         "Mirar primero comparativo de modelos y métricas finales.",
         "Validar calibración (Brier/ECE) además de AUC/KS.",
-        "Usar SHAP para explicar por qué el modelo decide así.",
+        "Usar el resumen interpretativo solo como chequeo rápido; el detalle vive en la página dedicada.",
     ],
 )
 render_decision_box(
@@ -310,10 +326,10 @@ focus_items = [
     ("lr_odds", "LR Odds"),
     ("catboost_params", "CatBoost Avanzado"),
     ("calibration", "Calibración"),
-    ("shap", "SHAP"),
+    ("shap", "Interpretabilidad"),
     ("upgrades", "Upgrades"),
 ]
-id_to_label = {item_id: label for item_id, label in focus_items}
+id_to_label = dict(focus_items)
 label_to_id = {label: item_id for item_id, label in focus_items}
 
 focus_section = str(st.session_state.get("model_lab_focus", "comparison"))
@@ -338,7 +354,7 @@ focus_labels = {
     "lr_odds": "Regresión logística: log-odds, odds y odds ratios",
     "catboost_params": "CatBoost avanzado: hiperparámetros aplicables al proyecto",
     "calibration": "Calibración probabilística y selección de método",
-    "shap": "Interpretabilidad con SHAP (global y local)",
+    "shap": "Resumen interpretativo y puente a la página dedicada",
     "upgrades": "Mejoras habilitadas por upgrades recientes",
 }
 st.info(f"Sección enfocada: **{focus_labels.get(focus_section, focus_section)}**")
@@ -411,7 +427,7 @@ Función conceptual: minimizar pérdida logarítmica y luego recalibrar para red
         r"\text{Brier} = \frac{1}{N}\sum_{i=1}^{N}(p_i-y_i)^2,\qquad \text{ECE}=\sum_b w_b\left|\hat{p}_b-\hat{y}_b\right|"
     )
 
-comparison = load_json("model_comparison")
+comparison = try_load_json("model_comparison", directory="data", default={})
 models = pd.DataFrame(comparison.get("models", []))
 final = comparison.get("final_test_metrics", {})
 cal_report = comparison.get("calibration_selection_report", {})
@@ -770,60 +786,66 @@ if _show_sections("comparison", "calibration"):
     st.dataframe(metricas_interpretacion, width="stretch", hide_index=True)
 
     st.subheader("Curvas ROC")
-    roc_df = load_parquet("roc_curve_data")
-    available_models = sorted(roc_df["model"].dropna().unique().tolist())
-    default_models = [
-        m for m in ["catboost_calibrated", "catboost_tuned", "logreg"] if m in available_models
-    ]
-    selected_models = st.multiselect(
-        "Modelos a comparar",
-        options=available_models,
-        default=default_models or available_models[:2],
-    )
-    roc_filtered = roc_df[roc_df["model"].isin(selected_models)]
+    roc_df = try_load_parquet("roc_curve_data")
+    if roc_df.empty or "model" not in roc_df.columns:
+        st.info("No hay `roc_curve_data.parquet` oficial disponible para esta vista.")
+    else:
+        available_models = sorted(roc_df["model"].dropna().unique().tolist())
+        default_models = [
+            m for m in ["catboost_calibrated", "catboost_tuned", "logreg"] if m in available_models
+        ]
+        selected_models = st.multiselect(
+            "Modelos a comparar",
+            options=available_models,
+            default=default_models or available_models[:2],
+        )
+        roc_filtered = roc_df[roc_df["model"].isin(selected_models)]
 
-    fig = px.line(
-        roc_filtered,
-        x="fpr",
-        y="tpr",
-        color="model",
-        title="Discriminación: ROC por modelo",
-        labels={"fpr": "FPR", "tpr": "TPR", "model": "Modelo"},
-    )
-    fig.add_shape(type="line", x0=0, y0=0, x1=1, y1=1, line={"dash": "dash", "color": "#888"})
-    fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=470)
-    st.plotly_chart(fig, width="stretch")
-    st.caption(
-        "Propósito: medir discriminación entre buenos y malos pagadores. "
-        "Insight: CatBoost calibrado/tuned domina baseline logístico en casi todo el rango."
-    )
+        fig = px.line(
+            roc_filtered,
+            x="fpr",
+            y="tpr",
+            color="model",
+            title="Discriminación: ROC por modelo",
+            labels={"fpr": "FPR", "tpr": "TPR", "model": "Modelo"},
+        )
+        fig.add_shape(type="line", x0=0, y0=0, x1=1, y1=1, line={"dash": "dash", "color": "#888"})
+        fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=470)
+        st.plotly_chart(fig, width="stretch")
+        st.caption(
+            "Propósito: medir discriminación entre buenos y malos pagadores. "
+            "Insight: CatBoost calibrado/tuned domina baseline logístico en casi todo el rango."
+        )
 
     st.subheader("Calibración probabilística")
-    cal_df = load_parquet("calibration_curve_data")
-    fig = go.Figure()
-    for model_name in sorted(cal_df["model"].dropna().unique()):
-        subset = cal_df[cal_df["model"] == model_name]
-        fig.add_trace(
-            go.Scatter(
-                x=subset["predicted_prob"],
-                y=subset["observed_freq"],
-                mode="markers+lines",
-                name=model_name,
+    cal_df = try_load_parquet("calibration_curve_data")
+    if cal_df.empty or "model" not in cal_df.columns:
+        st.info("No hay `calibration_curve_data.parquet` oficial disponible para esta vista.")
+    else:
+        fig = go.Figure()
+        for model_name in sorted(cal_df["model"].dropna().unique()):
+            subset = cal_df[cal_df["model"] == model_name]
+            fig.add_trace(
+                go.Scatter(
+                    x=subset["predicted_prob"],
+                    y=subset["observed_freq"],
+                    mode="markers+lines",
+                    name=model_name,
+                )
             )
+        fig.add_shape(type="line", x0=0, y0=0, x1=1, y1=1, line={"dash": "dash", "color": "#999"})
+        fig.update_layout(
+            **PLOTLY_TEMPLATE["layout"],
+            title="Probabilidad predicha vs frecuencia observada",
+            xaxis_title="Probabilidad predicha",
+            yaxis_title="Frecuencia observada",
+            height=430,
         )
-    fig.add_shape(type="line", x0=0, y0=0, x1=1, y1=1, line={"dash": "dash", "color": "#999"})
-    fig.update_layout(
-        **PLOTLY_TEMPLATE["layout"],
-        title="Probabilidad predicha vs frecuencia observada",
-        xaxis_title="Probabilidad predicha",
-        yaxis_title="Frecuencia observada",
-        height=430,
-    )
-    st.plotly_chart(fig, width="stretch")
-    st.caption(
-        "Propósito: evaluar calidad de probabilidad. Insight: cercanía a la diagonal indica menor sesgo de calibración; "
-        "esto es clave para IFRS9 y pricing."
-    )
+        st.plotly_chart(fig, width="stretch")
+        st.caption(
+            "Propósito: evaluar calidad de probabilidad. Insight: cercanía a la diagonal indica menor sesgo de calibración; "
+            "esto es clave para IFRS9 y pricing."
+        )
 
     col_nb1, col_nb2 = st.columns(2)
     with col_nb1:
@@ -853,67 +875,110 @@ if _show_sections("comparison", "calibration"):
     )
 
 if _show_sections("shap"):
-    st.subheader("Interpretabilidad con SHAP")
+    st.subheader("Resumen interpretativo")
     if focus_section == "shap":
         st.caption(
-            "Sección enfocada desde la navegación rápida v2. Si no hay artefactos SHAP, la página degrada sin romperse."
+            "La interpretación detallada ahora vive en la página dedicada `Explicabilidad e Interpretabilidad`."
         )
-    shap_summary = try_load_parquet("shap_summary")
-    if shap_summary.empty:
+    explainability_global = try_load_parquet("explainability_global")
+    explainability_local = try_load_parquet("explainability_local_cases")
+    explanation_drift = try_load_parquet("explanation_drift")
+    if explainability_global.empty and explainability_local.empty:
         st.info(
-            "No hay artefactos SHAP en este entorno; se omite la sección de interpretabilidad avanzada."
+            "No hay artefactos de explicabilidad en este entorno; se omite el resumen interpretativo."
         )
     else:
-        top_n = st.slider(
-            "Top variables por importancia SHAP", min_value=8, max_value=25, value=15, step=1
-        )
-        shap_top = shap_summary.head(top_n).sort_values("mean_abs_shap")
+        kpi_cards = [
+            {
+                "label": "Drivers globales",
+                "value": str(len(explainability_global)) if not explainability_global.empty else "N/D",
+            },
+            {
+                "label": "Casos locales",
+                "value": str(len(explainability_local)) if not explainability_local.empty else "N/D",
+            },
+            {
+                "label": "Overlap top-10",
+                "value": (
+                    f"{float(explanation_drift['rank_overlap_top10'].min()):.3f}"
+                    if not explanation_drift.empty
+                    else "N/D"
+                ),
+            },
+            {
+                "label": "Reason code drift",
+                "value": (
+                    "PASS"
+                    if (not explanation_drift.empty and bool(explanation_drift["passed_all"].all()))
+                    else "N/D"
+                ),
+            },
+        ]
+        kpi_row(kpi_cards, n_cols=4)
 
-        fig = px.bar(
-            shap_top,
-            x="mean_abs_shap",
-            y="feature",
-            orientation="h",
-            title=f"Top {top_n} variables más influyentes",
-            labels={"mean_abs_shap": "Impacto medio |SHAP|", "feature": "Variable"},
-        )
-        fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=max(360, top_n * 26))
-        fig.update_traces(marker_color="#00D4AA")
-        st.plotly_chart(fig, width="stretch")
-        st.caption(
-            "Propósito: identificar variables que explican el score. Insight: tasa de interés, plazo y calidad crediticia "
-            "concentran mayor aporte al riesgo."
-        )
-
-        if audience in ("Negocio", "Técnico"):
-            shap_raw = try_load_parquet("shap_raw_top20")
-            shap_features = sorted(
-                [c.replace("shap_", "") for c in shap_raw.columns if c.startswith("shap_")]
+        if not explainability_global.empty:
+            top_n = min(8, len(explainability_global))
+            summary_df = explainability_global.head(top_n).sort_values("mean_abs_shap")
+            fig = px.bar(
+                summary_df,
+                x="mean_abs_shap",
+                y="feature",
+                orientation="h",
+                color="feature_family" if "feature_family" in summary_df.columns else None,
+                labels={"mean_abs_shap": "Impacto medio |SHAP|", "feature": "Variable"},
+                title="Top drivers globales (resumen)",
             )
-            if shap_raw.empty or not shap_features:
-                st.info("No hay `shap_raw_top20.parquet`; se omite dependencia SHAP.")
+            fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=320)
+            fig.update_traces(marker_line_width=0)
+            st.plotly_chart(fig, width="stretch")
+
+        col_local, col_handoff = st.columns([1.0, 1.0], gap="large")
+        with col_local:
+            if explainability_local.empty:
+                st.info("No hay casos locales explicados en este entorno.")
             else:
-                selected_feat = st.selectbox(
-                    "Variable para explorar dependencia SHAP", shap_features, index=0
+                local_cols = [
+                    col
+                    for col in ["segmento", "score_raw", "pd_calibrada", "reason_code_text"]
+                    if col in explainability_local.columns
+                ]
+                st.dataframe(
+                    explainability_local.loc[:, local_cols],
+                    width="stretch",
+                    hide_index=True,
                 )
-                shap_col = f"shap_{selected_feat}"
-                val_col = f"val_{selected_feat}"
-                if shap_col in shap_raw.columns and val_col in shap_raw.columns:
-                    sample = shap_raw.sample(min(3000, len(shap_raw)), random_state=17)
-                    fig = px.scatter(
-                        sample,
-                        x=val_col,
-                        y=shap_col,
-                        opacity=0.35,
-                        title=f"Dependencia SHAP: {selected_feat}",
-                        labels={val_col: f"Valor de {selected_feat}", shap_col: "Contribución SHAP"},
-                    )
-                    fig.update_layout(**PLOTLY_TEMPLATE["layout"], height=420)
-                    st.plotly_chart(fig, width="stretch")
-                    st.caption(
-                        "Propósito: ver dirección y magnitud local del efecto por variable. "
-                        "Insight: el impacto no es lineal en todo el dominio."
-                    )
+        with col_handoff:
+            st.markdown(
+                """
+**Qué ya no resolvemos aquí**
+- drivers globales canónicos completos
+- casos locales con intervalos conformales
+- ALE vs PDP/ICE
+- redundancia/interacciones SHAP
+- explanation drift y challenger desde la óptica de interpretabilidad
+"""
+            )
+            st.markdown(
+                """
+**Por qué moverlo**
+- El laboratorio debe concentrarse en selección de modelo y calibración.
+- La interpretabilidad merece una narrativa propia y reutilizable por gobernanza.
+- Así evitamos duplicar visuales y definiciones entre páginas.
+"""
+            )
+            try:
+                st.page_link(
+                    "pages/model_interpretability.py",
+                    label="Abrir la página dedicada de explicabilidad",
+                    icon="➡️",
+                )
+            except Exception:
+                st.caption("➡️ pages/model_interpretability.py")
+
+        st.caption(
+            "Lectura correcta: aquí solo validamos que el modelo ganador siga siendo interpretable; "
+            "la defensa completa de drivers, effects y reason codes vive en la página dedicada."
+        )
 
 if _show_sections("upgrades"):
     with st.expander(
@@ -964,20 +1029,11 @@ if _show_sections("upgrades"):
                 "upgrades de `scikit-learn` y `shap`. Los workflows causales siguen disponibles en un env separado."
             )
 
-if _show_sections("shap"):
-    img = get_notebook_image_path("03_pd_modeling", "cell_017_out_00.png")
-    if img.exists():
-        st.image(
-            str(img),
-            caption="Notebook 03: SHAP beeswarm + importancia global (figura original).",
-            width="stretch",
-        )
-
 st.markdown(
     """
 **Conclusión del laboratorio:**
 - Se eligió CatBoost calibrado por equilibrio entre discriminación y confiabilidad probabilística.
-- SHAP muestra drivers coherentes con teoría de riesgo de crédito (tasa, score, carga financiera).
+- La interpretabilidad del campeón sigue alineada con teoría de riesgo, pero su desarrollo completo vive en la página dedicada.
 - Este bloque alimenta directamente incertidumbre conformal y decisiones robustas.
 """
 )
@@ -998,7 +1054,7 @@ render_caveats(
 render_page_feedback("model_laboratory")
 
 next_page_teaser(
-    "Cuantificación de Incertidumbre",
-    "Pasamos de probabilidades puntuales a bandas de riesgo con cobertura empírica.",
-    "pages/uncertainty_quantification.py",
+    "Explicabilidad e Interpretabilidad",
+    "Drivers globales, ALE, reason codes, casos locales e interpretación estable del score PD.",
+    "pages/model_interpretability.py",
 )

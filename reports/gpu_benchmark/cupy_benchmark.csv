@@ -1,7 +1,7 @@
 task,backend,seconds,metric,metric_value
-monte_carlo_ecl,numpy_cpu,0.8227360129999397,ecl_mean,28130215.2599364
+monte_carlo_ecl,numpy_cpu,0.7797149029793218,ecl_mean,28130215.2599364
 monte_carlo_ecl,cupy_gpu,,error,No module named 'cupy'
-svd,numpy_cpu,0.017729291000023295,top_sv,13048292.886780484
+svd,numpy_cpu,0.015992417989764363,top_sv,13305487.679193297
 svd,cupy_gpu,,error,No module named 'cupy'
-sparse_matmul,scipy_cpu,1.7938082390001,nnz,100623315.0
+sparse_matmul,scipy_cpu,1.6058297200070228,nnz,100623315.0
 sparse_matmul,cupy_gpu,,error,No module named 'cupy'

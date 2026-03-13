@@ -1,56 +1,66 @@
 {
   "schema_version": "2026-03-01.1",
-  "generated_at_utc": "2026-03-05T00:48:24.373599+00:00",
-  "run_tag": "2026-03-04-C-core-balanced-cert2",
+  "generated_at_utc": "2026-03-13T11:24:32.157248+00:00",
+  "run_tag": "champion-2026-03-12-mega-definitive",
   "strategy_a": "non_robust",
-  "strategy_b": "robust_selected_from_summary",
+  "strategy_b": "robust_selected_for_champion",
   "comparison": {
-    "mean_a": 0.6724636731868227,
-    "mean_b": 1.3990304422578481,
-    "diff": 0.7265667690710255,
-    "ci_low": -2.6454462469522615,
-    "ci_high": 4.527752115074372,
-    "p_value": 0.3598,
+    "mean_a": 1.4753163192859147,
+    "mean_b": 1.517530607169467,
+    "diff": 0.042214287883552304,
+    "ci_low": -0.5789992377277571,
+    "ci_high": 0.6599751602552129,
+    "p_value": 0.4495,
     "significant": false
   },
   "metrics_a": {
-    "total_return": 13449.273463736452,
-    "n_funded": 213,
-    "total_allocated": 1000000.0000000001,
-    "avg_return_per_funded": 63.14212893772976
+    "total_return": 221297.4478928872,
+    "n_funded": 209,
+    "total_allocated": 1000000.0,
+    "avg_return_per_funded": 1058.8394636023313
   },
   "metrics_b": {
-    "total_return": 27980.608845156963,
-    "n_funded": 57,
-    "total_allocated": 544238.4513860912,
-    "avg_return_per_funded": 490.887874476438
+    "total_return": 227629.59107542006,
+    "n_funded": 233,
+    "total_allocated": 1000000.0,
+    "avg_return_per_funded": 976.9510346584549
   },
-  "n_candidates_available": 20000,
-  "n_candidates_used": 20000,
-  "max_candidates_requested": 20000,
+  "n_candidates_available": 150000,
+  "n_candidates_used": 150000,
+  "max_candidates_requested": 180000,
   "dataset_scope": "sampled_candidates",
+  "solver_backend": "cuopt",
+  "policy_selector": "explicit_champion_only",
   "max_portfolio_pd_requested": 0.18,
   "max_portfolio_pd_effective": 0.18,
   "robust_policy": {
-    "source": "portfolio_robustness_summary",
+    "source": "champion_policy_artifact::explicit_champion_only",
     "risk_tolerance": 0.18,
     "uncertainty_aversion": 0.0,
     "min_budget_utilization": 0.0,
-    "pd_cap_slack_penalty": 0.0
+    "pd_cap_slack_penalty": 0.0,
+    "policy_mode": "capped_blended_uncertainty",
+    "gamma": 0.05,
+    "delta_cap_quantile": 0.9,
+    "tail_focus_quantile": 1.0
   },
+  "champion_policy_path": "models/champion_portfolio_policy.json",
+  "candidate_universe_path": "data/processed/champion_candidate_universe.parquet",
   "gate_contract": {
     "gate": "no_regression",
     "significance_role": "diagnostic"
   },
   "diagnostics": {
-    "p_value": 0.3598,
+    "p_value": 0.4495,
     "significant": false,
-    "n_boot": 5000,
+    "n_boot": 10000,
     "seed": 42
   },
+  "policy_search": [],
+  "frontier_path": "data/processed/portfolio_robustness_frontier.parquet",
   "no_regression": {
-    "diff_total_return": 14531.335381420511,
-    "tolerance_total_return": 672.4636731868227,
+    "diff_total_return": 6332.143182532862,
+    "tolerance_total_return": 11064.87239464436,
     "tolerance_pct_of_control": 0.05,
     "passed": true
   }

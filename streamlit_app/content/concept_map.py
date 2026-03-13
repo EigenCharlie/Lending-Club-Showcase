@@ -305,6 +305,11 @@ PAGE_CONCEPT_MAP: dict[str, tuple[str, ...]] = {
         "concept_drift",
         "c2st",
     ),
+    "model_interpretability": (
+        "prediction_interval",
+        "decision_threshold",
+        "concept_drift",
+    ),
     "model_laboratory": (
         "proper_scoring_rules",
         "decision_threshold",
@@ -398,6 +403,10 @@ PAGE_CONCEPT_MAP: dict[str, tuple[str, ...]] = {
 
 
 PAGE_ANTI_PATTERNS: dict[str, tuple[str, ...]] = {
+    "model_interpretability": (
+        "No confundir SHAP o permutation importance con causalidad.",
+        "No leer ALE/PDP como política de intervención individual.",
+    ),
     "model_laboratory": (
         "No confundir AUC alto con probabilidad bien calibrada.",
         "Now change random_state antes de consolidar claim de mejora.",
@@ -423,6 +432,7 @@ PAGE_ANTI_PATTERNS: dict[str, tuple[str, ...]] = {
 
 PAGE_FOCUS_NOTES: dict[str, str] = {
     "executive_summary": "Lectura rápida: traducir conceptos técnicos a impacto de decisión.",
+    "model_interpretability": "Lectura interpretativa: separar atribución, efecto, caso local y estabilidad.",
     "model_laboratory": "Lectura técnica: separar ranking, calibración y umbral de decisión.",
     "uncertainty_quantification": "Lectura de riesgo: cobertura vs ancho, no una sola métrica.",
     "portfolio_optimizer": "Lectura de política: retorno esperado vs resiliencia en peor caso.",

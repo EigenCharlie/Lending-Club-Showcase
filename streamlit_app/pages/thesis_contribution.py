@@ -127,9 +127,13 @@ Learning (DML) y Causal Forests (via econml y dowhy) estiman efectos causales
 heterogéneos, eliminando el sesgo de selección que contamina regresiones ingenuas.
 
 **6. Series de Tiempo** — Las tasas de default agregadas mensuales revelan patrones
-estacionales y tendencias macro. ARIMA captura la estructura temporal, LightGBM
-(via Nixtla mlforecast) incorpora features exógenas, y los intervalos conformal
-proporcionan bandas de pronóstico con cobertura controlada para stress testing.
+estacionales y cambios de régimen. El subsistema oficial combina baselines
+estadísticos (SeasonalNaive, ARIMA/ETS/Theta), challengers híbridos tipo
+STL+CatBoost residual y panel global bottom-up para `grade x term`. Las
+covariables exógenas solo se activan bajo contrato explícito de futuro
+(`ts_future_covariates.parquet`); si ese artefacto no existe, la narrativa oficial
+se mantiene univariada. Las bandas canónicas hoy se apoyan en intervalos
+estadísticos y ACI/EnbPI quedan como agenda de investigación para no-exchangeability.
 
 **7. Análisis de Supervivencia** — No solo importa *si* un préstamo incumple, sino
 *cuándo*. Cox Proportional Hazards y Random Survival Forests estiman la función de
@@ -530,7 +534,7 @@ st.markdown(
 # ── IFRS9 Connection ──
 st.subheader("6) Conexión con IFRS9")
 st.markdown(
-    f"""
+    """
 Los intervalos conformal no solo alimentan la optimización — también mejoran la gobernanza regulatoria:
 
 | Uso en IFRS9 | Descripción |
@@ -552,8 +556,8 @@ git clone <repo> && cd Lending-Club-End-to-End
 # Instalar dependencias
 uv sync --extra dev
 
-# Ejecutar pipeline completo
-uv run python scripts/end_to_end_pipeline.py
+# Ejecutar rebuild canónico
+uv run python scripts/run_canonical_rebuild.py
 
 # Verificar tests
 uv run pytest -x

@@ -1,0 +1,33 @@
+{
+  "schema_version": "2026-03-07.1",
+  "generated_at_utc": "2026-03-13T12:04:51.778089+00:00",
+  "run_tag": "champion-2026-03-12-mega-definitive",
+  "selection_reason": "best_feasible",
+  "selected_rule": "high_plus_medium_positive",
+  "selected_metrics": {
+    "rule_name": "high_plus_medium_positive",
+    "n_selected": 362202.0,
+    "action_rate": 0.269032935183624,
+    "total_net_value": 41725764.28056455,
+    "total_loss_reduction": 105303116.41056454,
+    "total_revenue_impact": -63577352.129999995,
+    "bootstrap_mean_net": 41730618.487029105,
+    "bootstrap_p05_net": 41601215.06759128,
+    "bootstrap_p95_net": 41863490.431048445,
+    "min_grade_total_net": 621338.1975184386,
+    "worst_grade": "G",
+    "pass_action_rate": true,
+    "pass_bootstrap": true,
+    "pass_grade_floor": true,
+    "pass_all": true
+  },
+  "constraints": {
+    "max_action_rate": 0.35,
+    "min_bootstrap_p05_net": 0.0,
+    "min_grade_total_net": 0.0
+  },
+  "source_simulation_path": "data/processed/causal_policy_simulation.parquet",
+  "source_effect_status_path": "models/causal_effect_status.json",
+  "effect_status_run_tag": "champion-2026-03-12-mega-definitive",
+  "policy_semantics": "local_cate_policy_simulation"
+}
