@@ -663,6 +663,15 @@ if not roi_term.empty:
             "hallazgos del análisis de supervivencia (mayor PD lifetime)."
         )
 
+_uset_img = get_notebook_image_path("08_portfolio_optimization", "uncertainty_sets.png")
+if _uset_img.exists():
+    with st.expander("Figura del notebook: sets de incertidumbre conformales", expanded=False):
+        st.image(
+            str(_uset_img),
+            caption="NB08: sets de incertidumbre box construidos a partir de intervalos conformales — visualización del espacio de PD plausibles que alimenta el optimizador robusto.",
+            width="stretch",
+        )
+
 st.markdown(
     """
 Como mensaje de cierre, esta página muestra por qué la optimización no es una capa "extra", sino el punto donde los outputs

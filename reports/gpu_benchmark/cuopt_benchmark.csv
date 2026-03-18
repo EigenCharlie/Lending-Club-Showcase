@@ -1,13 +1,13 @@
 task,backend,seconds,status,objective,n_variables
-portfolio_lp,scipy_highs_cpu,0.22776960700866766,0,29.327110000000438,5000
+portfolio_lp,scipy_highs_cpu,0.025840148999122903,0,29.327110000000438,5000
 portfolio_lp,cuopt_gpu,,error: No module named 'cuopt',,5000
-portfolio_lp,scipy_highs_cpu,0.02269247200456448,0,59.07554000000166,10000
+portfolio_lp,scipy_highs_cpu,0.02077768900198862,0,59.07554000000166,10000
 portfolio_lp,cuopt_gpu,,error: No module named 'cuopt',,10000
-portfolio_lp,scipy_highs_cpu,0.0428488589823246,0,117.44041000000193,20000
+portfolio_lp,scipy_highs_cpu,0.04044585300289327,0,117.44041000000193,20000
 portfolio_lp,cuopt_gpu,,error: No module named 'cuopt',,20000
-portfolio_lp,scipy_highs_cpu,0.07380608300445601,0,208.33542500000016,35000
+portfolio_lp,scipy_highs_cpu,0.07104099899879657,0,208.33542500000016,35000
 portfolio_lp,cuopt_gpu,,error: No module named 'cuopt',,35000
-portfolio_lp,scipy_highs_cpu,0.10620265398756601,0,303.5387200000333,50000
+portfolio_lp,scipy_highs_cpu,0.09906101100204978,0,303.5387200000333,50000
 portfolio_lp,cuopt_gpu,,error: No module named 'cuopt',,50000
-portfolio_milp,scipy_milp_cpu,0.1181260809826199,0,182.277,3000
+portfolio_milp,scipy_milp_cpu,0.1075155190010264,0,182.277,3000
 portfolio_milp,cuopt_milp_gpu,,error: No module named 'cuopt',,3000

@@ -56,5 +56,8 @@
     "identification": "DoWhy backdoor identification/refutation",
     "heterogeneity": "EconML CausalForestDML",
     "policy_semantics": "local_cate_policy_simulation"
-  }
+  },
+  "source_run": "champion-2026-03-12-mega-definitive",
+  "regenerated_in_paper_grade_run": false,
+  "insights_only_note": "insights_only \u2014 not regenerated in paper-grade run by design (causal CATE requires separate causal env). Source: champion-2026-03-12-mega-definitive."
 }

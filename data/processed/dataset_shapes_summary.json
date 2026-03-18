@@ -36,7 +36,7 @@
     "cols": 10
   },
   "data/processed/time_series_panel.parquet": {
-    "rows": 3011,
+    "rows": 3078,
     "cols": 13
   },
   "data/processed/ead_dataset.parquet": {

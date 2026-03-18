@@ -1,6 +1,6 @@
 task,backend,seconds,metric,metric_value,speedup_vs_cpu
-graph_build,networkx_cpu,0.6659596329845954,nodes,200056.0,
-connected_components,networkx_cpu,0.055340728984447196,n_components,1.0,
-pagerank,networkx_cpu,1.1253301970136818,sum_pagerank,0.9999999999999343,
-louvain,networkx_cpu,7.398758155002724,n_communities,10.0,
-betweenness_centrality,networkx_cpu,76.29004548001103,max_bc,0.611438307791601,
+graph_build,networkx_cpu,0.6301187009994464,nodes,200056.0,
+connected_components,networkx_cpu,0.05578151400186471,n_components,1.0,
+pagerank,networkx_cpu,0.6408254970010603,sum_pagerank,0.9999999999999343,
+louvain,networkx_cpu,7.058476596001128,n_communities,10.0,
+betweenness_centrality,networkx_cpu,75.93248322200088,max_bc,0.611438307791601,

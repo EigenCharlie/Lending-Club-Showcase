@@ -1,47 +1,47 @@
 {
-  "run_tag": "champion-2026-03-12-mega-definitive",
+  "run_tag": "paper-grade-2026-03-13-final-heavy-2026-03-13-230650",
   "pipeline": {
     "batch_size": 276869,
-    "pd_mean": 0.21658084621969373,
-    "pd_auc": 0.7127913494994733,
-    "interval_width_mean": 0.7549591277777552,
+    "pd_mean": 0.21772715384642047,
+    "pd_auc": 0.7129967525110764,
+    "interval_width_mean": 0.7545805465617317,
     "stages": {
-      "S1": 88358,
-      "S2": 126260,
+      "S1": 85659,
+      "S2": 128959,
       "S3": 62251
     },
-    "ecl_expected": 998855536.404284,
-    "ecl_conservative": 1802272153.6204371,
-    "ecl_range": 803416617.2161531,
-    "robust_return": 169490.52711864203,
-    "robust_funded": 300,
-    "nonrobust_return": 82483.17723140352,
-    "nonrobust_funded": 155,
-    "price_of_robustness": -87007.34988723851,
+    "ecl_expected": 1002580797.0272369,
+    "ecl_conservative": 1799251585.6140563,
+    "ecl_range": 796670788.5868194,
+    "robust_return": 183071.3499921966,
+    "robust_funded": 299,
+    "nonrobust_return": 3.88537264920913e-11,
+    "nonrobust_funded": 0,
+    "price_of_robustness": -183071.34999219657,
     "pipeline_time_s": 274.79
   },
   "pd_model": {
-    "final_auc": 0.7127913494994733,
-    "final_gini": 0.42558269899894663,
-    "final_brier": 0.15453854630270586,
-    "final_ece": 0.006247440054484605,
-    "final_d2_brier": 0.09877557592904151,
-    "calibration_method": "Isotonic Regression"
+    "final_auc": 0.7129967525110764,
+    "final_gini": 0.42599350502215283,
+    "final_brier": 0.15451304235095986,
+    "final_ece": 0.005933135956720309,
+    "final_d2_brier": 0.0989243076517976,
+    "calibration_method": "Venn-Abers"
   },
   "conformal": {
-    "coverage_90": 0.9256832653709878,
-    "coverage_95": 0.9515836009087331,
+    "coverage_90": 0.9251848347052216,
+    "coverage_95": 0.9593201116773636,
     "overall_pass": false,
-    "n_checks_passed": 8
+    "n_checks_passed": 9
   },
   "survival": {
     "cox_concordance": 0.6643376647992065,
-    "rsf_concordance": 0.679658583356981
+    "rsf_concordance": 0.6714883557003979
   },
   "dataset": {
-    "n_loans": 674964,
-    "n_events": 129052,
-    "event_rate": 0.1911983453932358
+    "n_loans": 500000,
+    "n_events": 95417,
+    "event_rate": 0.190834
   },
   "causal": {
     "ate": 0.009745774723713147,
@@ -62,7 +62,7 @@
       "policy_semantics": "local_cate_policy_simulation"
     },
     "run_tag_coherence": {
-      "expected_run_tag": "champion-2026-03-12-mega-definitive",
+      "expected_run_tag": "paper-grade-2026-03-13-final-heavy-2026-03-13-230650",
       "observed_run_tags": [
         "champion-2026-03-12-mega-definitive"
       ],
@@ -73,16 +73,21 @@
         "cate_portfolio_status": "champion-2026-03-12-mega-definitive"
       },
       "missing_run_tag_artifacts": [],
-      "mismatched_artifacts": [],
-      "coherent": true
+      "mismatched_artifacts": [
+        "cate_portfolio_status",
+        "causal_effect_status",
+        "causal_policy_oot_status",
+        "causal_policy_rule"
+      ],
+      "coherent": false
     }
   },
   "explainability": {
     "top_global_drivers": [
       "int_rate",
       "term",
-      "home_ownership",
       "fico_score",
+      "home_ownership",
       "dti"
     ],
     "n_global_features": 42,
@@ -90,46 +95,46 @@
     "n_ale_features": 7
   },
   "flattened_summary": {
-    "pd_auc": 0.7127913494994733,
-    "pd_gini": 0.42558269899894663,
-    "pd_brier": 0.15453854630270586,
-    "pd_ece": 0.006247440054484605,
-    "pd_d2_brier": 0.09877557592904151,
-    "calibration_method": "Isotonic Regression",
-    "conformal_coverage_90": 0.9256832653709878,
-    "conformal_coverage_95": 0.9515836009087331,
+    "pd_auc": 0.7129967525110764,
+    "pd_gini": 0.42599350502215283,
+    "pd_brier": 0.15451304235095986,
+    "pd_ece": 0.005933135956720309,
+    "pd_d2_brier": 0.0989243076517976,
+    "calibration_method": "Venn-Abers",
+    "conformal_coverage_90": 0.9251848347052216,
+    "conformal_coverage_95": 0.9593201116773636,
     "conformal_overall_pass": false,
     "survival_cox_concordance": 0.6643376647992065,
-    "survival_rsf_concordance": 0.679658583356981,
-    "dataset_n_loans": 674964,
-    "dataset_n_events": 129052,
-    "dataset_event_rate": 0.1911983453932358,
+    "survival_rsf_concordance": 0.6714883557003979,
+    "dataset_n_loans": 500000,
+    "dataset_n_events": 95417,
+    "dataset_event_rate": 0.190834,
     "causal_ate": 0.009745774723713147,
     "causal_cate_mean": 0.009745774723713147,
     "causal_total_net_value": 41725764.28056455,
     "causal_bootstrap_p05_net": 41601215.06759128,
     "causal_oot_p05_monthly_net": 2616.5367493968442
   },
-  "pd_auc": 0.7127913494994733,
-  "pd_gini": 0.42558269899894663,
-  "pd_brier": 0.15453854630270586,
-  "pd_ece": 0.006247440054484605,
-  "pd_d2_brier": 0.09877557592904151,
-  "calibration_method": "Isotonic Regression",
-  "conformal_coverage_90": 0.9256832653709878,
-  "conformal_coverage_95": 0.9515836009087331,
+  "pd_auc": 0.7129967525110764,
+  "pd_gini": 0.42599350502215283,
+  "pd_brier": 0.15451304235095986,
+  "pd_ece": 0.005933135956720309,
+  "pd_d2_brier": 0.0989243076517976,
+  "calibration_method": "Venn-Abers",
+  "conformal_coverage_90": 0.9251848347052216,
+  "conformal_coverage_95": 0.9593201116773636,
   "conformal_overall_pass": false,
   "survival_cox_concordance": 0.6643376647992065,
-  "survival_rsf_concordance": 0.679658583356981,
-  "dataset_n_loans": 674964,
-  "dataset_n_events": 129052,
-  "dataset_event_rate": 0.1911983453932358,
+  "survival_rsf_concordance": 0.6714883557003979,
+  "dataset_n_loans": 500000,
+  "dataset_n_events": 95417,
+  "dataset_event_rate": 0.190834,
   "causal_ate": 0.009745774723713147,
   "causal_cate_mean": 0.009745774723713147,
   "causal_total_net_value": 41725764.28056455,
   "causal_bootstrap_p05_net": 41601215.06759128,
   "causal_oot_p05_monthly_net": 2616.5367493968442,
   "schema_version": "2026-03-06.1",
-  "generated_at_utc": "2026-03-13T12:07:01.209712+00:00",
+  "generated_at_utc": "2026-03-16T06:13:16.901861+00:00",
   "dataset_scope": "full_data"
 }

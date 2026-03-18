@@ -1,7 +1,7 @@
 {
   "schema_version": "2026-03-07.1",
-  "generated_at_utc": "2026-03-13T12:04:58.395794+00:00",
-  "run_tag": "champion-2026-03-12-mega-definitive",
+  "generated_at_utc": "2026-03-18T02:33:18.226932+00:00",
+  "run_tag": "paper-grade-2026-03-13-final-heavy-2026-03-13-230650",
   "rule_name": "high_plus_medium_positive",
   "min_history_months": 12,
   "n_months_evaluated": 106,

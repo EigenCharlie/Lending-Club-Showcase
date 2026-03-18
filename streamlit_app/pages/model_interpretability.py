@@ -456,6 +456,54 @@ def _render_notebook_gallery() -> None:
             ),
             "bridge": "Por eso cada caso arquetipico de esta pagina incluye PD calibrada + intervalo.",
         },
+        {
+            "label": "Waterfall",
+            "stem": "13_model_explainability",
+            "file": "shap_waterfall_examples.png",
+            "title": "SHAP waterfall: casos locales con reason codes",
+            "caption": "Notebook 13: waterfall de casos individuales — quién paga y quién no.",
+            "insight": (
+                "El waterfall muestra exactamente cómo cada feature empuja la PD hacia arriba o abajo "
+                "respecto al valor base. Es el formato más directo para reason codes en auditoría."
+            ),
+            "bridge": "Esta visualización conecta directamente con los reason codes de la sección de casos locales.",
+        },
+        {
+            "label": "SHAP vs Perm",
+            "stem": "13_model_explainability",
+            "file": "shap_vs_permutation.png",
+            "title": "SHAP vs permutation importance: consistencia de ranking",
+            "caption": "Notebook 13: comparación de dos métodos de importancia.",
+            "insight": (
+                "Cuando SHAP y permutation importance coinciden en el top-10, el ranking de drivers "
+                "es robusto. Divergencias señalan features con interacciones no capturadas por SHAP marginal."
+            ),
+            "bridge": "Sustenta la elección de SHAP como método primario ante comité o regulador.",
+        },
+        {
+            "label": "Monotonicidad",
+            "stem": "13_model_explainability",
+            "file": "monotonicity_verification.png",
+            "title": "Verificación de monotonicidad económica",
+            "caption": "Notebook 13: chequeo de que el modelo cumple restricciones económicas esperadas.",
+            "insight": (
+                "Un modelo puede tener AUC alto pero violar sentido económico (ej. mayor ingreso → mayor PD). "
+                "Este chequeo es la primera línea de defensa ante gobernanza y auditoría."
+            ),
+            "bridge": "Validación necesaria antes de presentar el modelo a comité de crédito o regulador.",
+        },
+        {
+            "label": "Familias",
+            "stem": "13_model_explainability",
+            "file": "feature_family_decomposition.png",
+            "title": "Descomposición de importancia por familia de features",
+            "caption": "Notebook 13: masa SHAP total por familia (riesgo, ingresos, historial, producto).",
+            "insight": (
+                "Agrupar drivers por familia revela qué dimensión del riesgo domina el modelo: "
+                "¿calidad crediticia histórica, carga financiera actual o características del producto?"
+            ),
+            "bridge": "Insumo directo para el narrative de gobernanza: explicar el modelo a no-técnicos.",
+        },
     ]
     valid_items = [
         item
