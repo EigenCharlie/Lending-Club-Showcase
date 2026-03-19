@@ -1,0 +1,34 @@
+2026-03-10 10:05:58.916 | INFO     | src.models.pd_model:temporal_train_val_split:106 - Temporal split (issue_d): fit=1,144,364, val=201,947
+/home/eigenlinux/projects/lending-club-risk-project/.venv/lib/python3.12/site-packages/optuna/_experimental.py:33: ExperimentalWarning: Argument ``multivariate`` is an experimental feature. The interface can change in the future.
+  optuna_warn(
+/home/eigenlinux/projects/lending-club-risk-project/.venv/lib/python3.12/site-packages/optuna/_experimental.py:33: ExperimentalWarning: Argument ``group`` is an experimental feature. The interface can change in the future.
+  optuna_warn(
+[I 2026-03-10 10:05:59,642] A new study created in memory with name: no-name-8d901080-f556-44a2-bd5a-c23b9699304c
+[I 2026-03-10 10:06:45,453] Trial 0 finished with value: 0.7233959591972603 and parameters: {'bootstrap_type': 'Bernoulli', 'grow_policy': 'SymmetricTree', 'learning_rate': 0.006194745024628934, 'l2_leaf_reg': 49.21157869251302, 'min_data_in_leaf': 309, 'random_strength': 0.012042752972516831, 'border_count': 67, 'leaf_estimation_iterations': 10, 'rsm': 0.9162213204002109, 'depth': 5, 'subsample': 0.5818212352431953}. Best is trial 0 with value: 0.7233959591972603.
+[I 2026-03-10 10:07:28,726] Trial 1 finished with value: 0.7247567697203476 and parameters: {'bootstrap_type': 'MVS', 'grow_policy': 'Lossguide', 'learning_rate': 0.008364645453054504, 'l2_leaf_reg': 2.350734621780486, 'min_data_in_leaf': 196, 'random_strength': 3.6366360716958565e-05, 'border_count': 213, 'leaf_estimation_iterations': 2, 'rsm': 0.7571172192068059, 'max_leaves': 45, 'subsample': 0.520902685723999}. Best is trial 1 with value: 0.7247567697203476.
+[I 2026-03-10 10:08:08,720] Trial 2 finished with value: 0.7244761496052825 and parameters: {'bootstrap_type': 'Bayesian', 'grow_policy': 'Depthwise', 'learning_rate': 0.015380821666156693, 'l2_leaf_reg': 0.8389121192038964, 'min_data_in_leaf': 349, 'random_strength': 2.5207219165367527e-05, 'border_count': 87, 'leaf_estimation_iterations': 5, 'rsm': 0.5171942605576092, 'depth': 10, 'bagging_temperature': 2.587799816000169}. Best is trial 1 with value: 0.7247567697203476.
+[I 2026-03-10 10:08:29,188] Trial 3 finished with value: 0.7254712820108686 and parameters: {'bootstrap_type': 'Bayesian', 'grow_policy': 'Lossguide', 'learning_rate': 0.08725278311502205, 'l2_leaf_reg': 72.57470008242939, 'min_data_in_leaf': 450, 'random_strength': 0.0009527956991613836, 'border_count': 240, 'leaf_estimation_iterations': 1, 'rsm': 0.5979914312095727, 'max_leaves': 18, 'bagging_temperature': 3.2533033076326436}. Best is trial 3 with value: 0.7254712820108686.
+[I 2026-03-10 10:09:13,975] Trial 4 finished with value: 0.7193169512576437 and parameters: {'bootstrap_type': 'MVS', 'grow_policy': 'Lossguide', 'learning_rate': 0.00840889766039911, 'l2_leaf_reg': 35.06302000452684, 'min_data_in_leaf': 55, 'random_strength': 7.393828382876342, 'border_count': 211, 'leaf_estimation_iterations': 2, 'rsm': 0.5027610585618012, 'max_leaves': 55, 'subsample': 0.8180858047314277}. Best is trial 3 with value: 0.7254712820108686.
+[I 2026-03-10 10:09:26,425] Trial 5 finished with value: 0.7236967450393468 and parameters: {'bootstrap_type': 'Bernoulli', 'grow_policy': 'Lossguide', 'learning_rate': 0.04983460221146937, 'l2_leaf_reg': 2.8865313924585916, 'min_data_in_leaf': 50, 'random_strength': 1.2877252667142137e-06, 'border_count': 126, 'leaf_estimation_iterations': 8, 'rsm': 0.8187787356776066, 'max_leaves': 59, 'subsample': 0.7124967163228771}. Best is trial 3 with value: 0.7254712820108686.
+2026-03-10 10:10:09.219 | INFO     | src.models.optuna_tuning:train_catboost_tuned_optuna:305 - CatBoost tuned — val_AUC: 0.7255, best_trial_val_AUC: 0.7255, trials=6, multivariate_tpe=True, group_tpe=True
+0:	test: 0.6822629	best: 0.6822629 (0)	total: 36.7ms	remaining: 44s
+100:	test: 0.7214453	best: 0.7214453 (100)	total: 2.97s	remaining: 32.3s
+200:	test: 0.7234952	best: 0.7235053 (199)	total: 5.85s	remaining: 29.1s
+300:	test: 0.7241834	best: 0.7242270 (287)	total: 8.64s	remaining: 25.8s
+400:	test: 0.7247317	best: 0.7247492 (399)	total: 11.4s	remaining: 22.6s
+500:	test: 0.7249977	best: 0.7250076 (498)	total: 14.1s	remaining: 19.7s
+600:	test: 0.7253431	best: 0.7253431 (600)	total: 16.9s	remaining: 16.8s
+Stopped by overfitting detector  (50 iterations wait)
+
+bestTest = 0.725471282
+bestIteration = 643
+
+Shrink model to first 644 iterations.
+0:	total: 31.9ms	remaining: 20.5s
+100:	total: 3.23s	remaining: 17.4s
+200:	total: 6.42s	remaining: 14.1s
+300:	total: 9.67s	remaining: 11s
+400:	total: 12.8s	remaining: 7.79s
+500:	total: 16.1s	remaining: 4.6s
+600:	total: 19.4s	remaining: 1.39s
+643:	total: 20.7s	remaining: 0us

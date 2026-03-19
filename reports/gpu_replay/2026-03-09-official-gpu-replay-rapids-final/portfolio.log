@@ -1,0 +1,12 @@
+$ /home/eigenlinux/miniforge3/envs/rapids/bin/python -u -m scripts.optimize_portfolio --config configs/optimization.yaml --max_candidates 0 --solver_backend cuopt
+
+2026-03-09 23:44:30.416 | INFO     | src.models.conformal_artifacts:load_conformal_intervals:38 - Using canonical conformal artifact: data/processed/conformal_intervals_mondrian.parquet
+2026-03-09 23:44:30.519 | INFO     | __main__:_load_interval_artifact:57 - Loaded conformal intervals from data/processed/conformal_intervals_mondrian.parquet (legacy=False, rows=276,869)
+2026-03-09 23:44:31.104 | INFO     | __main__:_align_candidates_and_intervals:111 - Aligned candidates and intervals by id: n=276,869 (candidate_rows=276,869, interval_rows=276,869)
+2026-03-09 23:44:34.418 | INFO     | src.optimization.cuopt_adapter:solve_portfolio_cuopt_native:162 - Portfolio solved (cuopt_native): obj=83,026.99, funded=219/276869, allocated=1,000,000, pd_cap_slack=0.0000
+2026-03-09 23:44:34.436 | INFO     | src.optimization.robust_opt:scenario_analysis:84 - Scenario analysis: {'best_case': 0.0, 'expected': 9447.866491795272, 'worst_case': 45000.00000057619}
+2026-03-09 23:44:34.436 | INFO     | __main__:main:182 - Optimization complete: Optimal
+2026-03-09 23:44:34.436 | INFO     | __main__:main:183 - Objective value: 83,026.99
+2026-03-09 23:44:34.441 | INFO     | __main__:main:184 - Scenarios:
+   best_case     expected    worst_case         range
+0        0.0  9447.866492  45000.000001  45000.000001

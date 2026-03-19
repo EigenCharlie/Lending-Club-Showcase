@@ -1,0 +1,16 @@
+{
+  "stage": "hpo",
+  "backend": "cpu",
+  "rows_fit": 120000,
+  "rows_val": 30000,
+  "rows_test": 276869,
+  "n_trials": 6,
+  "status": "completed",
+  "total_seconds": 242.70971401499992,
+  "best_iteration": 643,
+  "best_validation_auc": 0.7254712820108686,
+  "study_name": "",
+  "auc": 0.7120511184986875,
+  "brier": 0.2118523748231255,
+  "ece": 0.2262830494069846
+}

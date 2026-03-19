@@ -1,0 +1,33 @@
+{
+  "schema_version": "2026-03-08.1",
+  "generated_at_utc": "2026-03-10T04:48:58.991594+00:00",
+  "run_tag": "2026-03-09-official-gpu-replay-rapids-final",
+  "selection_policy": {
+    "rank_order": [
+      "ab_pass(desc)",
+      "realized_total_return(desc)",
+      "price_of_robustness(asc)"
+    ]
+  },
+  "selected_policy": {
+    "risk_tolerance": 0.14,
+    "policy_mode": "blended_uncertainty",
+    "gamma": 0.0,
+    "uncertainty_aversion": 0.0,
+    "min_budget_utilization": 0.0,
+    "pd_cap_slack_penalty": 0.0,
+    "pd_cap_slack": 0.0,
+    "solver_backend": "cuopt"
+  },
+  "selection_metrics": {
+    "ab_pass": true,
+    "ab_diff_total_return": 142076.2782519058,
+    "realized_total_return": 179574.9074871196,
+    "price_of_robustness": -86131.0475768188,
+    "price_of_robustness_pct": -97.31597123234064,
+    "n_funded": 292
+  },
+  "frontier_path": "reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/portfolio_robustness_frontier.parquet",
+  "summary_path": "reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/portfolio_robustness_summary.parquet",
+  "candidate_universe_path": "reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/champion_candidate_universe.parquet"
+}

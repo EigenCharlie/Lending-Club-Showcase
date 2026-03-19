@@ -1,0 +1,18 @@
+$ /home/eigenlinux/miniforge3/envs/rapids/bin/python -u -m scripts.optimize_cate_portfolio --max_candidates 0 --solver_backend cuopt
+
+2026-03-09 23:49:25.769 | INFO     | __main__:main:255 - Loaded test=276,869 intervals=276,869 with alignment=id_join_oot_cate
+2026-03-09 23:49:25.769 | INFO     | __main__:main:264 - Using 276,869 candidates (max_candidates=full)
+2026-03-09 23:49:25.873 | INFO     | src.optimization.causal_portfolio:build_cate_adjusted_portfolio:132 - Building baseline portfolio (no CATE adjustment)
+2026-03-09 23:49:29.072 | INFO     | src.optimization.cuopt_adapter:solve_portfolio_cuopt_native:162 - Portfolio solved (cuopt_native): obj=83,026.99, funded=219/276869, allocated=1,000,000, pd_cap_slack=0.0000
+2026-03-09 23:49:29.077 | INFO     | src.optimization.causal_portfolio:apply_cate_adjustment:73 - CATE adjustment: 190791/276869 loans eligible, avg PD reduction: 0.020618
+2026-03-09 23:49:29.078 | INFO     | src.optimization.causal_portfolio:build_cate_adjusted_portfolio:154 - Building CATE-adjusted portfolio
+2026-03-09 23:49:30.946 | INFO     | src.optimization.cuopt_adapter:solve_portfolio_cuopt_native:162 - Portfolio solved (cuopt_native): obj=81,227.17, funded=200/276869, allocated=1,000,000, pd_cap_slack=0.0000
+2026-03-09 23:49:30.948 | INFO     | src.optimization.causal_portfolio:build_cate_adjusted_portfolio:182 - Comparison — Baseline obj: 83,026.99, CATE-adjusted obj: 81,227.17
+2026-03-09 23:49:30.948 | INFO     | src.optimization.causal_portfolio:build_cate_adjusted_portfolio:132 - Building baseline portfolio (no CATE adjustment)
+2026-03-09 23:49:32.865 | INFO     | src.optimization.cuopt_adapter:solve_portfolio_cuopt_native:162 - Portfolio solved (cuopt_native): obj=83,026.99, funded=219/276869, allocated=1,000,000, pd_cap_slack=0.0000
+2026-03-09 23:49:32.870 | INFO     | src.optimization.causal_portfolio:apply_cate_adjustment:73 - CATE adjustment: 205587/276869 loans eligible, avg PD reduction: 0.014270
+2026-03-09 23:49:32.871 | INFO     | src.optimization.causal_portfolio:build_cate_adjusted_portfolio:154 - Building CATE-adjusted portfolio
+2026-03-09 23:49:34.729 | INFO     | src.optimization.cuopt_adapter:solve_portfolio_cuopt_native:162 - Portfolio solved (cuopt_native): obj=79,787.46, funded=201/276869, allocated=1,000,000, pd_cap_slack=0.0000
+2026-03-09 23:49:34.731 | INFO     | src.optimization.causal_portfolio:build_cate_adjusted_portfolio:182 - Comparison — Baseline obj: 83,026.99, CATE-adjusted obj: 79,787.46
+2026-03-09 23:49:34.734 | INFO     | __main__:main:342 - Saved comparison: reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/cate_portfolio_comparison.parquet
+2026-03-09 23:49:34.735 | INFO     | __main__:main:404 - Saved status: reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/models/cate_portfolio_status.json

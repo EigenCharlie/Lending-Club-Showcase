@@ -1,0 +1,124 @@
+{
+  "schema_version": "2026-03-10.1",
+  "run_tag": "2026-03-10-pd-rapids-benchmark-v1",
+  "cpu_run_tag": "2026-03-09-C-official-champion64safe",
+  "gpu_run_tag": "2026-03-09-official-gpu-replay-rapids-final",
+  "fit_sample_size": 250000,
+  "fit_val_size": 50000,
+  "hpo_sample_size": 120000,
+  "hpo_val_size": 30000,
+  "hpo_trials": 6,
+  "stages": [
+    {
+      "stage": "fit_only",
+      "cpu_seconds": 57.74427892398671,
+      "gpu_seconds": 33.70278754098399,
+      "speedup_gpu_vs_cpu": 1.713338365669821,
+      "cpu_auc": 0.7107781692093239,
+      "gpu_auc": 0.7109501974291094,
+      "cpu_brier": 0.2096867574747471,
+      "gpu_brier": 0.21178063720903,
+      "cpu_ece": 0.2197407325127971,
+      "gpu_ece": 0.22401366624482102
+    },
+    {
+      "stage": "full_stage",
+      "cpu_seconds": 513.769402,
+      "gpu_seconds": 977.446,
+      "speedup_gpu_vs_cpu": 0.5256243332112465,
+      "cpu_auc": NaN,
+      "gpu_auc": 0.7139,
+      "cpu_brier": NaN,
+      "gpu_brier": 0.1545,
+      "cpu_ece": NaN,
+      "gpu_ece": 0.0065
+    },
+    {
+      "stage": "hpo",
+      "cpu_seconds": 242.70971401499992,
+      "gpu_seconds": NaN,
+      "speedup_gpu_vs_cpu": NaN,
+      "cpu_auc": 0.7120511184986875,
+      "gpu_auc": NaN,
+      "cpu_brier": 0.2118523748231255,
+      "gpu_brier": NaN,
+      "cpu_ece": 0.2262830494069846,
+      "gpu_ece": NaN
+    }
+  ],
+  "rows": [
+    {
+      "stage": "fit_only",
+      "backend": "cpu",
+      "rows_fit": 250000,
+      "rows_val": 50000,
+      "rows_test": 276869,
+      "fit_seconds": 57.47887809399981,
+      "predict_seconds": 0.26540082998690195,
+      "total_seconds": 57.74427892398671,
+      "best_iteration": 658,
+      "auc": 0.7107781692093239,
+      "brier": 0.2096867574747471,
+      "ece": 0.2197407325127971
+    },
+    {
+      "stage": "fit_only",
+      "backend": "gpu",
+      "rows_fit": 250000,
+      "rows_val": 50000,
+      "rows_test": 276869,
+      "fit_seconds": 33.4286686169944,
+      "predict_seconds": 0.27411892398959026,
+      "total_seconds": 33.70278754098399,
+      "best_iteration": 583,
+      "auc": 0.7109501974291094,
+      "brier": 0.21178063720903,
+      "ece": 0.22401366624482102
+    },
+    {
+      "stage": "hpo",
+      "backend": "cpu",
+      "rows_fit": 120000,
+      "rows_val": 30000,
+      "rows_test": 276869,
+      "n_trials": 6,
+      "status": "completed",
+      "total_seconds": 242.70971401499992,
+      "best_iteration": 643,
+      "best_validation_auc": 0.7254712820108686,
+      "study_name": "",
+      "auc": 0.7120511184986875,
+      "brier": 0.2118523748231255,
+      "ece": 0.2262830494069846
+    },
+    {
+      "stage": "hpo",
+      "backend": "gpu",
+      "rows_fit": 120000,
+      "rows_val": 30000,
+      "rows_test": 276869,
+      "n_trials": 6,
+      "status": "failed",
+      "return_code": -11,
+      "log_path": "/home/eigenlinux/projects/lending-club-risk-project/reports/gpu_replay/2026-03-10-pd-rapids-benchmark-v1/artifacts/hpo_gpu.log"
+    },
+    {
+      "stage": "full_stage",
+      "backend": "cpu",
+      "total_seconds": 513.769402,
+      "auc": NaN,
+      "brier": NaN,
+      "ece": NaN
+    },
+    {
+      "stage": "full_stage",
+      "backend": "gpu",
+      "total_seconds": 977.446,
+      "auc": 0.7139,
+      "brier": 0.1545,
+      "ece": 0.0065,
+      "peak_gpu_util": 83.0,
+      "peak_memory_used_mb": 9775.0
+    }
+  ]
+}

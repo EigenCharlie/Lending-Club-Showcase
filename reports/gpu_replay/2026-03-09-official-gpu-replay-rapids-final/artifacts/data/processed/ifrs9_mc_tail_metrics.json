@@ -1,0 +1,46 @@
+{
+  "schema_version": "2026-03-10.1",
+  "run_tag": "2026-03-09-official-gpu-replay-rapids-final",
+  "n_loans": 276869,
+  "n_scenarios": 8192,
+  "chunk_size": 256,
+  "n_chunks": 32,
+  "seed": 42,
+  "temporal_source": "ts_ifrs9_scenarios_mean_vs_recent_actual",
+  "temporal_pd_baseline_mult": 1.0171538398530624,
+  "cpu_seconds": 63.74632077299975,
+  "gpu_seconds": 1.2112312600002042,
+  "speedup_gpu_vs_cpu": 52.62935566325212,
+  "cpu_tail": {
+    "mean": 1041729160.8830857,
+    "std": 266703106.61325195,
+    "p50": 1010099878.9554086,
+    "p90": 1407929335.9280713,
+    "p95": 1529855026.280019,
+    "p99": 1762099123.5565498,
+    "expected_shortfall_95": 1672431080.2537003
+  },
+  "gpu_tail": {
+    "mean": 1041728398.4960938,
+    "std": 266702017.6180262,
+    "p50": 1010100096.0,
+    "p90": 1407933747.2,
+    "p95": 1529831244.8,
+    "p99": 1762095225.6000001,
+    "expected_shortfall_95": 1672428986.0682926
+  },
+  "max_abs_diff_total_ecl": 6907782.921412945,
+  "mean_abs_diff_total_ecl": 8853.758802626115,
+  "max_rel_diff_total_ecl_pct": 0.5123063597570114,
+  "mean_rel_diff_total_ecl_pct": 0.000798293797695111,
+  "input_quality": {
+    "n_rows": 276869,
+    "pd_orig_mean": 0.16510278032210524,
+    "pd_current_mean": 0.21989662977390903,
+    "dpd_ge_30_share": 0.25132824548793836,
+    "dpd_ge_90_share": 0.22483918387396207,
+    "stage3_status_share": 0.22483918387396207,
+    "source_pd_orig": "train_vintage_grade_issue_quarter",
+    "source_dpd": "loan_status_and_delinquency_features"
+  }
+}

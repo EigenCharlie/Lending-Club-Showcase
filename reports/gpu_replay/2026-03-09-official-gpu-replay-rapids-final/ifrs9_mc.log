@@ -1,0 +1,10 @@
+$ /home/eigenlinux/miniforge3/envs/rapids/bin/python -u scripts/run_ifrs9_monte_carlo_gpu.py --n-scenarios 8192 --chunk-size 256
+
+2026-03-09 23:49:35.921 | INFO     | src.models.conformal_artifacts:load_conformal_intervals:38 - Using canonical conformal artifact: data/processed/conformal_intervals_mondrian.parquet
+2026-03-09 23:49:36.052 | INFO     | scripts.run_ifrs9_sensitivity:_load_intervals:29 - Loaded intervals: data/processed/conformal_intervals_mondrian.parquet (276,869, legacy=False)
+2026-03-09 23:49:38.547 | INFO     | scripts.run_ifrs9_sensitivity:_load_raw_splits:40 - Loaded train raw: data/processed/train.parquet (1,346,311)
+2026-03-09 23:49:38.547 | INFO     | scripts.run_ifrs9_sensitivity:_load_raw_splits:41 - Loaded test raw: data/processed/test.parquet (276,869)
+2026-03-09 23:49:38.550 | INFO     | scripts.run_ifrs9_sensitivity:_load_lifetime_table:52 - Loaded lifetime PD table: data/processed/lifetime_pd_table.parquet
+2026-03-09 23:50:46.090 | INFO     | __main__:main:284 - Saved IFRS9 Monte Carlo distribution: reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/ifrs9_mc_distribution.parquet
+2026-03-09 23:50:46.090 | INFO     | __main__:main:285 - Saved IFRS9 Monte Carlo summary: reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/ifrs9_mc_tail_metrics.json
+2026-03-09 23:50:46.090 | INFO     | __main__:main:286 - IFRS9 Monte Carlo benchmark | loans=276869 scenarios=8192 cpu_s=63.746 gpu_s=1.211 speedup=52.63x

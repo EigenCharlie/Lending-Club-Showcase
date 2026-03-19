@@ -36,9 +36,9 @@ from streamlit_app.theme import PLOTLY_TEMPLATE
 from streamlit_app.utils import (
     format_number,
     get_notebook_image_path,
+    load_rapids_stage_comparison,
     load_rapids_tradeoff_full_ab_status,
     load_rapids_tradeoff_full_policy,
-    load_rapids_stage_comparison,
     page_error_boundary,
     try_load_json,
     try_load_parquet,

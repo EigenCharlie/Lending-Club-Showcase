@@ -33,8 +33,8 @@ from streamlit_app.utils import (
     load_rapids_ifrs9_correlated_metrics,
     load_rapids_ifrs9_mc_tail_metrics,
     load_rapids_insight_detail,
-    load_rapids_pd_benchmark_stage_table,
     load_rapids_insight_stage_table,
+    load_rapids_pd_benchmark_stage_table,
     load_rapids_stage_comparison,
     load_rapids_tradeoff_full_ab_status,
     load_rapids_tradeoff_full_policy,
@@ -42,7 +42,6 @@ from streamlit_app.utils import (
     try_load_json,
     try_load_parquet,
 )
-
 
 STAGE_LABELS = {
     "pd": "PD CatBoost",
@@ -207,7 +206,7 @@ fig_speedup.update_layout(**PLOTLY_TEMPLATE["layout"], height=420, coloraxis_sho
 st.plotly_chart(fig_speedup, width="stretch")
 
 st.markdown(
-    f"""
+    """
 **Lectura principal**
 
 - La GPU ya es claramente ganadora en **investigación de operaciones**: portfolio, frontier tradeoff, A/B y CATE.

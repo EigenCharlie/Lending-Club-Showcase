@@ -1,0 +1,34 @@
+{
+  "schema_version": "2026-03-08.1",
+  "run_tag": "2026-03-09-official-gpu-replay-rapids-final",
+  "baseline_run_tag": "2026-03-09-C-official-champion64safe",
+  "profile": "rapids_final",
+  "selected_stages": [
+    "pd",
+    "lgd_ead",
+    "portfolio",
+    "tradeoff",
+    "ab",
+    "cate_portfolio",
+    "ifrs9_mc"
+  ],
+  "pd_config": "configs/pd_model.gpu.yaml",
+  "optimization_config": "configs/optimization.yaml",
+  "run_notebooks_after": false,
+  "notebook_timeout": 3600,
+  "notebook_output_dir": "reports/notebook_exec",
+  "notebook_inplace": true,
+  "include_side_projects": false,
+  "extract_images_after": false,
+  "started_at_utc": "2026-03-10T04:27:08.927208+00:00",
+  "state": "running",
+  "rapids_env_validation": {
+    "checked": true,
+    "needs_rapids": true,
+    "missing": [],
+    "python": "/home/eigenlinux/miniforge3/envs/rapids/bin/python",
+    "stdout": "{\"python\": \"/home/eigenlinux/miniforge3/envs/rapids/bin/python\", \"ok\": true}",
+    "stderr": ""
+  },
+  "note": "This replay uses the current workspace artifacts. Run it immediately after the CPU baseline you want to compare against."
+}

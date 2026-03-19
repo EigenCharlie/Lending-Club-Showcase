@@ -18,7 +18,11 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from streamlit_app.components.audience_toggle import audience_selector
-from streamlit_app.components.context_help import chart_help_popover, methodology_dialog, term_popover
+from streamlit_app.components.context_help import (
+    chart_help_popover,
+    methodology_dialog,
+    term_popover,
+)
 from streamlit_app.components.dvc_kpi_spine import render_global_kpi_spine
 from streamlit_app.components.metric_cards import kpi_row
 from streamlit_app.components.narrative import narrative_block, storytelling_intro
@@ -715,11 +719,10 @@ with tabs[0]:
         ),
     ]
     for col, (title, subtitle, body) in zip(card_cols, cards):
-        with col:
-            with st.container(border=True):
-                st.markdown(f"**{title}**")
-                st.caption(subtitle)
-                st.markdown(body)
+        with col, st.container(border=True):
+            st.markdown(f"**{title}**")
+            st.caption(subtitle)
+            st.markdown(body)
 
     st.markdown(
         """

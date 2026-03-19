@@ -1,0 +1,12 @@
+$ /home/eigenlinux/miniforge3/envs/rapids/bin/python -u -m scripts.simulate_ab_test --max_portfolio_pd 0.18 --max_candidates 150000 --n_boot 5000 --seed 42 --no_regression_tolerance_pct 0.05 --run-tag 2026-03-09-official-gpu-replay-rapids-final --solver_backend cuopt
+
+2026-03-09 23:49:01.203 | INFO     | __main__:_apply_candidate_universe:224 - Using champion candidate universe from reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/champion_candidate_universe.parquet with n=150000
+2026-03-09 23:49:01.250 | INFO     | __main__:main:286 - Using 150000 candidates (max_candidates=150000)
+2026-03-09 23:49:01.253 | INFO     | __main__:_resolve_robust_policy:112 - Resolved robust policy from champion artifact: risk_tolerance=0.1400, policy_mode=blended_uncertainty, gamma=0.00
+2026-03-09 23:49:01.253 | INFO     | __main__:main:335 - Strategy A (control): non-robust portfolio
+2026-03-09 23:49:03.265 | INFO     | src.optimization.cuopt_adapter:solve_portfolio_cuopt_native:162 - Portfolio solved (cuopt_native): obj=174,637.64, funded=292/150000, allocated=1,000,000, pd_cap_slack=0.0000
+2026-03-09 23:49:03.265 | INFO     | __main__:main:343 - Strategy B (treatment): robust portfolio
+2026-03-09 23:49:04.247 | INFO     | src.optimization.cuopt_adapter:solve_portfolio_cuopt_native:162 - Portfolio solved (cuopt_native): obj=174,637.64, funded=292/150000, allocated=1,000,000, pd_cap_slack=0.0000
+2026-03-09 23:49:22.668 | INFO     | __main__:main:412 - Saved results: reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/ab_simulation_results.parquet
+2026-03-09 23:49:22.669 | INFO     | __main__:main:463 - Saved status: reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/models/ab_simulation_status.json
+2026-03-09 23:49:22.669 | INFO     | __main__:main:465 - A/B result: A(non-robust)=179,574.91, B(robust)=179,574.91, diff=0.00, p=0.5058

@@ -1,0 +1,222 @@
+{
+  "schema_version": "2026-03-02.1",
+  "generated_at_utc": "2026-03-10T04:43:59.195054+00:00",
+  "run_tag": "2026-03-09-official-gpu-replay-rapids-final",
+  "lgd": {
+    "available": true,
+    "n_train": 249380,
+    "n_cal": 52751,
+    "n_test": 60850,
+    "schema_variant": "adaptive_lgd_v2",
+    "selected_variant": "direct_adaptive_grade_temporal",
+    "selection_reason": "selected_best_pass_by_width",
+    "model_metrics": {
+      "two_stage": {
+        "stage1_auc": 0.5620808816278229,
+        "lgd_mae": 0.19198401520550498,
+        "lgd_rmse": 0.2239838098682754
+      },
+      "direct": {
+        "lgd_mae": 0.19285851809419047,
+        "lgd_rmse": 0.22469751886596018,
+        "lgd_bias": -0.17935530573966485
+      }
+    },
+    "conformal": {
+      "metrics_90": {
+        "empirical_coverage": 0.9049958915365653,
+        "target_coverage": 0.9,
+        "coverage_gap": 0.004995891536565322,
+        "avg_interval_width": 0.4951028025979476,
+        "median_interval_width": 0.49095225687228117
+      },
+      "metrics_95": {
+        "empirical_coverage": 0.9550205423171734,
+        "target_coverage": 0.95,
+        "coverage_gap": 0.005020542317173415,
+        "avg_interval_width": 0.5733504684198738,
+        "median_interval_width": 0.5671257129892279
+      },
+      "policy": {
+        "target_coverage_online_90": 0.905,
+        "target_coverage_online_95": 0.955,
+        "eta": 0.12,
+        "offset_rho": 0.03,
+        "maturity_uncertainty_lambda": 0.25,
+        "maturity_months_reference": 24.0,
+        "q_start_90": 0.2850761284361415,
+        "q_start_95": 0.3333628564946941,
+        "q_end_by_grade_90": {
+          "A": 0.3498761284360586,
+          "B": 0.2922761284360066,
+          "D": 0.2352761284361118,
+          "C": 0.3102761284360574,
+          "E": 0.184276128436135,
+          "G": 0.3312761284361418,
+          "F": 0.32227612843614395
+        },
+        "q_end_by_grade_95": {
+          "A": 0.4461628564946003,
+          "B": 0.29256285649448144,
+          "D": 0.26556285649444145,
+          "C": 0.2505628564943832,
+          "E": 0.1845628564946195,
+          "G": 0.3615628564946906,
+          "F": 0.3825628564946808
+        },
+        "offset_end_by_grade_90": {
+          "A": 0.22468094328209332,
+          "B": 0.19388267463419734,
+          "C": 0.1936672135225616,
+          "D": 0.16689746955761023,
+          "E": 0.09350174140559223,
+          "F": 0.08553961924223641,
+          "G": 0.08599565898724985
+        },
+        "offset_end_by_grade_95": {
+          "A": 0.22468094328209332,
+          "B": 0.19388267463419734,
+          "C": 0.1936672135225616,
+          "D": 0.16689746955761023,
+          "E": 0.09350174140559223,
+          "F": 0.08553961924223641,
+          "G": 0.08599565898724985
+        }
+      }
+    },
+    "guardrails": {
+      "overall_pass": true,
+      "coverage_90": 0.9049958915365653,
+      "coverage_95": 0.9550205423171734,
+      "min_grade_coverage_90": 0.9046563192904656,
+      "width_inflation_90": 0.8738419863208756,
+      "width_inflation_95": 0.8752156013658426,
+      "abs_bias": 0.08987255055006704,
+      "status_path": "reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/models/lgd_guardrails_status.json"
+    },
+    "artifacts": {
+      "intervals_path": "reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/conformal_intervals_lgd.parquet",
+      "benchmark_path": "reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/lgd_variant_benchmark.parquet",
+      "diagnostics_path": "reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/lgd_coverage_diagnostics.parquet",
+      "coverage_by_grade_path": "reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/lgd_coverage_by_grade.parquet",
+      "coverage_by_year_path": "reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/lgd_coverage_by_year.parquet"
+    },
+    "benchmark_variants": [
+      {
+        "variant": "two_stage_split",
+        "coverage_90": 0.7827773212818406,
+        "coverage_95": 0.8747904683648315,
+        "avg_width_90": 0.5665816135506052,
+        "avg_width_95": 0.6550962614527385,
+        "bias": -0.1784016526852186,
+        "min_grade_coverage_90": 0.5331844288449266,
+        "min_year_coverage_90": 0.48418724659049023,
+        "n_test": 60850.0,
+        "n_grades_eval": 6.0,
+        "n_years_eval": 2.0,
+        "width_inflation_90": 1.0,
+        "width_inflation_95": 1.0,
+        "check_coverage_90": false,
+        "check_coverage_95": false,
+        "check_min_grade_coverage_90": false,
+        "check_width_inflation_90": true,
+        "check_width_inflation_95": true,
+        "check_abs_bias": false,
+        "overall_pass": false
+      },
+      {
+        "variant": "direct_split",
+        "coverage_90": 0.7819391947411668,
+        "coverage_95": 0.8740345110928512,
+        "avg_width_90": 0.5675843176987784,
+        "avg_width_95": 0.6562266620014092,
+        "bias": -0.17935530573966485,
+        "min_grade_coverage_90": 0.5299936183790683,
+        "min_year_coverage_90": 0.4826391448580907,
+        "n_test": 60850.0,
+        "n_grades_eval": 6.0,
+        "n_years_eval": 2.0,
+        "width_inflation_90": 1.0017697435359567,
+        "width_inflation_95": 1.001725548770747,
+        "check_coverage_90": false,
+        "check_coverage_95": false,
+        "check_min_grade_coverage_90": false,
+        "check_width_inflation_90": true,
+        "check_width_inflation_95": true,
+        "check_abs_bias": false,
+        "overall_pass": false
+      },
+      {
+        "variant": "direct_cqr",
+        "coverage_90": 0.7367789646672145,
+        "coverage_95": 0.82936729663106,
+        "avg_width_90": 0.5590067899295932,
+        "avg_width_95": 0.7050165706723249,
+        "bias": -0.18913435211618396,
+        "min_grade_coverage_90": 0.7113577599798196,
+        "min_year_coverage_90": 0.38429782528566164,
+        "n_test": 60850.0,
+        "n_grades_eval": 6.0,
+        "n_years_eval": 2.0,
+        "width_inflation_90": 0.9866306575436806,
+        "width_inflation_95": 1.07620301344551,
+        "check_coverage_90": false,
+        "check_coverage_95": false,
+        "check_min_grade_coverage_90": false,
+        "check_width_inflation_90": true,
+        "check_width_inflation_95": true,
+        "check_abs_bias": false,
+        "overall_pass": false
+      },
+      {
+        "variant": "direct_adaptive_grade_temporal",
+        "coverage_90": 0.9049958915365653,
+        "coverage_95": 0.9550205423171734,
+        "avg_width_90": 0.4951028025979476,
+        "avg_width_95": 0.5733504684198738,
+        "bias": -0.08987255055006704,
+        "min_grade_coverage_90": 0.9046563192904656,
+        "min_year_coverage_90": 0.9048286030224844,
+        "n_test": 60850.0,
+        "n_grades_eval": 6.0,
+        "n_years_eval": 2.0,
+        "width_inflation_90": 0.8738419863208756,
+        "width_inflation_95": 0.8752156013658426,
+        "check_coverage_90": true,
+        "check_coverage_95": true,
+        "check_min_grade_coverage_90": true,
+        "check_width_inflation_90": true,
+        "check_width_inflation_95": true,
+        "check_abs_bias": true,
+        "overall_pass": true
+      }
+    ]
+  },
+  "ead": {
+    "available": true,
+    "n_train": 249380,
+    "n_cal": 52751,
+    "n_test": 60850,
+    "model_metrics": {
+      "ead_mae": 45.410682790441335,
+      "ead_r2": 0.99972213515563
+    },
+    "conformal": {
+      "metrics_90": {
+        "empirical_coverage": 0.9003944124897288,
+        "target_coverage": 0.9,
+        "coverage_gap": 0.0003944124897288237,
+        "avg_interval_width": 197.98479460040105,
+        "median_interval_width": 197.98479460040107
+      },
+      "metrics_95": {
+        "empirical_coverage": 0.9410353327855382,
+        "target_coverage": 0.95,
+        "coverage_gap": 0.008964667214461763,
+        "avg_interval_width": 337.0645180291467,
+        "median_interval_width": 337.0645180291467
+      }
+    },
+    "intervals_path": "reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/conformal_intervals_ead.parquet"
+  }
+}

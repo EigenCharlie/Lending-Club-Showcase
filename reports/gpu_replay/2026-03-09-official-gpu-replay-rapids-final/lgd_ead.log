@@ -1,0 +1,15 @@
+$ uv run python -u scripts/train_lgd_ead.py --sample_size 0 --run-tag 2026-03-09-official-gpu-replay-rapids-final --catboost_backend gpu
+
+2026-03-09 23:44:04.546 | INFO     | src.models.lgd_model:train_two_stage_lgd:70 - Two-stage LGD — Stage1 AUC: 0.5621, MAE: 0.1920, RMSE: 0.2240
+2026-03-09 23:44:09.219 | INFO     | src.models.lgd_model:train_direct_lgd:103 - Direct LGD — MAE: 0.1929, RMSE: 0.2247, bias: -0.1794
+2026-03-09 23:44:25.211 | INFO     | src.models.conformal:validate_coverage:397 - Coverage validation: empirical=0.9050 vs target=0.9000
+2026-03-09 23:44:25.212 | INFO     | src.models.conformal:validate_coverage:397 - Coverage validation: empirical=0.9550 vs target=0.9500
+2026-03-09 23:44:25.232 | INFO     | __main__:main:828 - Saved LGD conformal intervals: reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/conformal_intervals_lgd.parquet
+2026-03-09 23:44:25.232 | INFO     | __main__:main:829 - LGD selected variant=direct_adaptive_grade_temporal, cov90=0.9050, cov95=0.9550, width90=0.4951, width95=0.5734
+2026-03-09 23:44:28.829 | INFO     | src.models.ead_model:train_ead_model:42 - EAD Model — MAE: 45.41, R²: 0.9997
+2026-03-09 23:44:28.866 | INFO     | src.models.conformal:create_regression_intervals:248 - Conformal regression intervals (alpha=0.1): avg_width=197.9848
+2026-03-09 23:44:28.878 | INFO     | src.models.conformal:create_regression_intervals:248 - Conformal regression intervals (alpha=0.05): avg_width=337.0645
+2026-03-09 23:44:28.943 | INFO     | src.models.conformal:validate_coverage:397 - Coverage validation: empirical=0.9004 vs target=0.9000
+2026-03-09 23:44:28.943 | INFO     | src.models.conformal:validate_coverage:397 - Coverage validation: empirical=0.9410 vs target=0.9500
+2026-03-09 23:44:28.944 | INFO     | __main__:main:903 - Saved EAD conformal intervals: reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/conformal_intervals_ead.parquet
+2026-03-09 23:44:28.944 | INFO     | __main__:main:910 - Saved LGD/EAD conformal status: reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/models/conformal_lgd_ead_status.json

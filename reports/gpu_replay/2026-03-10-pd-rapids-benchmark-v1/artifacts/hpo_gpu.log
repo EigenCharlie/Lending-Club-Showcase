@@ -1,0 +1,11 @@
+2026-03-10 10:10:14.468 | INFO     | src.models.pd_model:temporal_train_val_split:106 - Temporal split (issue_d): fit=1,144,364, val=201,947
+/home/eigenlinux/projects/lending-club-risk-project/.venv/lib/python3.12/site-packages/optuna/_experimental.py:33: ExperimentalWarning: Argument ``multivariate`` is an experimental feature. The interface can change in the future.
+  optuna_warn(
+/home/eigenlinux/projects/lending-club-risk-project/.venv/lib/python3.12/site-packages/optuna/_experimental.py:33: ExperimentalWarning: Argument ``group`` is an experimental feature. The interface can change in the future.
+  optuna_warn(
+[I 2026-03-10 10:10:15,203] A new study created in memory with name: no-name-3d4eab6b-ab34-4c0b-8923-ecf56701c5af
+Default metric period is 5 because AUC is/are not implemented for GPU
+[I 2026-03-10 10:12:10,972] Trial 0 finished with value: 0.7247350811958313 and parameters: {'bootstrap_type': 'Bernoulli', 'grow_policy': 'SymmetricTree', 'learning_rate': 0.006194745024628934, 'l2_leaf_reg': 49.21157869251302, 'min_data_in_leaf': 309, 'random_strength': 0.012042752972516831, 'border_count': 67, 'leaf_estimation_iterations': 10, 'depth': 9, 'subsample': 0.5955525998052242}. Best is trial 0 with value: 0.7247350811958313.
+Default metric period is 5 because AUC is/are not implemented for GPU
+[I 2026-03-10 10:12:54,449] Trial 1 finished with value: 0.7199486494064331 and parameters: {'bootstrap_type': 'MVS', 'grow_policy': 'SymmetricTree', 'learning_rate': 0.04777437867054351, 'l2_leaf_reg': 1.0470069436968716, 'min_data_in_leaf': 160, 'random_strength': 4.6091244325959946e-06, 'border_count': 151, 'leaf_estimation_iterations': 8, 'depth': 5, 'subsample': 0.7314054972861253}. Best is trial 0 with value: 0.7247350811958313.
+Default metric period is 5 because AUC is/are not implemented for GPU

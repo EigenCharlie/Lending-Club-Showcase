@@ -1,0 +1,62 @@
+{
+  "schema_version": "2026-03-01.1",
+  "generated_at_utc": "2026-03-10T04:49:22.669607+00:00",
+  "run_tag": "2026-03-09-official-gpu-replay-rapids-final",
+  "strategy_a": "non_robust",
+  "strategy_b": "robust_selected_for_champion",
+  "comparison": {
+    "mean_a": 1.197166049914131,
+    "mean_b": 1.197166049914131,
+    "diff": 0.0,
+    "ci_low": -0.555397967588185,
+    "ci_high": 0.5677553253845335,
+    "p_value": 0.5058,
+    "significant": false
+  },
+  "metrics_a": {
+    "total_return": 179574.90748711964,
+    "n_funded": 292,
+    "total_allocated": 1000000.0,
+    "avg_return_per_funded": 614.9825598873961
+  },
+  "metrics_b": {
+    "total_return": 179574.90748711964,
+    "n_funded": 292,
+    "total_allocated": 1000000.0,
+    "avg_return_per_funded": 614.9825598873961
+  },
+  "n_candidates_available": 150000,
+  "n_candidates_used": 150000,
+  "max_candidates_requested": 150000,
+  "dataset_scope": "sampled_candidates",
+  "solver_backend": "cuopt",
+  "max_portfolio_pd_requested": 0.18,
+  "max_portfolio_pd_effective": 0.14,
+  "robust_policy": {
+    "source": "champion_policy_artifact",
+    "risk_tolerance": 0.14,
+    "uncertainty_aversion": 0.0,
+    "min_budget_utilization": 0.0,
+    "pd_cap_slack_penalty": 0.0,
+    "policy_mode": "blended_uncertainty",
+    "gamma": 0.0
+  },
+  "champion_policy_path": "models/champion_portfolio_policy.json",
+  "candidate_universe_path": "reports/gpu_replay/2026-03-09-official-gpu-replay-rapids-final/artifacts/data/processed/champion_candidate_universe.parquet",
+  "gate_contract": {
+    "gate": "no_regression",
+    "significance_role": "diagnostic"
+  },
+  "diagnostics": {
+    "p_value": 0.5058,
+    "significant": false,
+    "n_boot": 5000,
+    "seed": 42
+  },
+  "no_regression": {
+    "diff_total_return": 0.0,
+    "tolerance_total_return": 8978.745374355982,
+    "tolerance_pct_of_control": 0.05,
+    "passed": true
+  }
+}
