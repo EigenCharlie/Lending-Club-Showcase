@@ -1,0 +1,97 @@
+[2026-03-12T01:54:29.494152-05:00] ENV_FILE_LOADED path=.env keys=16
+[2026-03-12T01:54:29.494513-05:00] RUN_START pid=271016 resume=1
+[2026-03-12T01:54:30.038942-05:00] STEP_START name=preflight required=1
+[2026-03-12T01:54:30.039173-05:00] STEP_SUBPHASE_START name=preflight idx=1/3 cmd=/home/eigenlinux/miniforge3/envs/rapids/bin/python -c 'import cuopt, cuml, cupy; print('"'"'rapids_ok'"'"')'
+[2026-03-12T01:54:38.145107-05:00] STEP_SUBPHASE_END name=preflight idx=1/3 ec=0
+[2026-03-12T01:54:38.145195-05:00] STEP_SUBPHASE_START name=preflight idx=2/3 cmd=python -m pytest -q tests/test_docs tests/test_streamlit/test_page_imports.py tests/test_config_consistency.py
+[2026-03-12T01:54:40.647892-05:00] STEP_SUBPHASE_END name=preflight idx=2/3 ec=0
+[2026-03-12T01:54:40.647985-05:00] STEP_SUBPHASE_START name=preflight idx=3/3 cmd=python scripts/run_comparison.py snapshot --run-tag champion-2026-03-12-mega-definitive
+[2026-03-12T01:54:44.650190-05:00] STEP_SUBPHASE_END name=preflight idx=3/3 ec=0
+[2026-03-12T01:54:44.650584-05:00] STEP_END name=preflight ec=0 duration_s=14.6
+[2026-03-12T01:54:44.650889-05:00] STEP_START name=main_pre required=1
+[2026-03-12T01:54:44.651198-05:00] STEP_SUBPHASE_START name=main_pre idx=1/7 cmd=scripts/cleanup_optuna_stale_trials.py
+[2026-03-12T01:54:45.153062-05:00] STEP_SUBPHASE_END name=main_pre idx=1/7 ec=0
+[2026-03-12T01:54:45.153166-05:00] STEP_SUBPHASE_START name=main_pre idx=2/7 cmd=scripts/train_pd_model.py
+[2026-03-12T22:30:29.194032-05:00] STEP_SUBPHASE_END name=main_pre idx=2/7 ec=1
+[2026-03-12T22:30:29.195343-05:00] STEP_END name=main_pre ec=1 duration_s=74144.5
+[2026-03-12T22:30:29.196393-05:00] RUN_ABORT required_step_failed=main_pre
+[2026-03-12T22:30:29.197146-05:00] RUN_END final_ec=1 failed_steps=['main_pre']
+[2026-03-13T01:26:47.254732-05:00] ENV_FILE_LOADED path=.env keys=16
+[2026-03-13T01:26:47.255156-05:00] RUN_START pid=573325 resume=1
+[2026-03-13T01:26:47.926473-05:00] STEP_START name=heavy_main required=0
+[2026-03-13T01:26:47.926799-05:00] STEP_SUBPHASE_START name=heavy_main idx=1/8 cmd=scripts/ensure_memory_headroom.py
+[2026-03-13T01:26:48.428711-05:00] STEP_SUBPHASE_END name=heavy_main idx=1/8 ec=0
+[2026-03-13T01:26:48.428838-05:00] STEP_SUBPHASE_START name=heavy_main idx=2/8 cmd=scripts/run_survival_analysis.py
+[2026-03-13T01:42:20.140056-05:00] STEP_STALL_WARNING name=heavy_main no_log_output_for_s=904
+[2026-03-13T04:10:35.267696-05:00] STEP_SUBPHASE_END name=heavy_main idx=2/8 ec=0
+[2026-03-13T04:10:35.267833-05:00] STEP_SUBPHASE_START name=heavy_main idx=3/8 cmd=scripts/train_lgd_ead.py
+[2026-03-13T04:11:23.468899-05:00] STEP_SUBPHASE_END name=heavy_main idx=3/8 ec=0
+[2026-03-13T04:11:23.469039-05:00] STEP_SUBPHASE_START name=heavy_main idx=4/8 cmd=/home/eigenlinux/miniforge3/envs/rapids/bin/python -u -m scripts.optimize_portfolio --config configs/optimization.yaml -
+[2026-03-13T04:11:31.472812-05:00] STEP_SUBPHASE_END name=heavy_main idx=4/8 ec=0
+[2026-03-13T04:11:31.472939-05:00] STEP_SUBPHASE_START name=heavy_main idx=5/8 cmd=/home/eigenlinux/miniforge3/envs/rapids/bin/python -u -m scripts.optimize_portfolio_tradeoff --config configs/optimizati
+[2026-03-13T05:18:20.867686-05:00] STEP_SUBPHASE_END name=heavy_main idx=5/8 ec=0
+[2026-03-13T05:18:20.867802-05:00] STEP_SUBPHASE_START name=heavy_main idx=6/8 cmd=/home/eigenlinux/miniforge3/envs/rapids/bin/python -u -m scripts.select_economic_portfolio_policy --config configs/optim
+[2026-03-13T06:23:54.377438-05:00] STEP_SUBPHASE_END name=heavy_main idx=6/8 ec=0
+[2026-03-13T06:23:54.377592-05:00] STEP_SUBPHASE_START name=heavy_main idx=7/8 cmd=/home/eigenlinux/miniforge3/envs/rapids/bin/python -u -m scripts.simulate_ab_test --max_portfolio_pd 0.18 --max_candidat
+[2026-03-13T06:24:32.892050-05:00] STEP_SUBPHASE_END name=heavy_main idx=7/8 ec=0
+[2026-03-13T06:24:32.892196-05:00] STEP_SUBPHASE_START name=heavy_main idx=8/8 cmd=scripts/log_mlflow_experiment_suite.py
+[2026-03-13T06:28:52.995972-05:00] STEP_SUBPHASE_END name=heavy_main idx=8/8 ec=0
+[2026-03-13T06:28:52.996575-05:00] STEP_END name=heavy_main ec=0 duration_s=18125.1
+[2026-03-13T06:28:52.997024-05:00] STEP_START name=causal required=0
+[2026-03-13T06:28:52.997358-05:00] STEP_SUBPHASE_START name=causal idx=1/2 cmd=scripts/ensure_memory_headroom.py
+[2026-03-13T06:28:53.499292-05:00] STEP_SUBPHASE_END name=causal idx=1/2 ec=0
+[2026-03-13T06:28:53.499413-05:00] STEP_SUBPHASE_START name=causal idx=2/2 cmd=bash scripts/causal/run_causal_pipeline.sh --treatment int_rate --sample_size 0 --run_tag champion-2026-03-12-mega-defin
+[2026-03-13T06:44:03.350061-05:00] STEP_STALL_WARNING name=causal no_log_output_for_s=904
+[2026-03-13T07:04:58.991328-05:00] STEP_SUBPHASE_END name=causal idx=2/2 ec=0
+[2026-03-13T07:04:59.137225-05:00] STEP_END name=causal ec=0 duration_s=2166.0
+[2026-03-13T07:04:59.138078-05:00] STEP_START name=cate_portfolio required=0
+[2026-03-13T07:04:59.138467-05:00] STEP_SUBPHASE_START name=cate_portfolio idx=1/2 cmd=uv run python -u scripts/ensure_memory_headroom.py --label causal --min-mem-gb 8 --min-swap-gb 6 --min-total-headroom-gb
+[2026-03-13T07:04:59.640661-05:00] STEP_SUBPHASE_END name=cate_portfolio idx=1/2 ec=0
+[2026-03-13T07:04:59.640762-05:00] STEP_SUBPHASE_START name=cate_portfolio idx=2/2 cmd=/home/eigenlinux/miniforge3/envs/rapids/bin/python -u -m scripts.optimize_cate_portfolio --max_candidates 180000 --solve
+[2026-03-13T07:05:08.645338-05:00] STEP_SUBPHASE_END name=cate_portfolio idx=2/2 ec=0
+[2026-03-13T07:05:08.652845-05:00] STEP_END name=cate_portfolio ec=0 duration_s=9.5
+[2026-03-13T07:05:08.653386-05:00] STEP_START name=post_core required=0
+[2026-03-13T07:05:08.653683-05:00] STEP_SUBPHASE_START name=post_core idx=1/13 cmd=scripts/validate_conformal_policy.py
+[2026-03-13T07:05:10.158329-05:00] STEP_SUBPHASE_END name=post_core idx=1/13 ec=0
+[2026-03-13T07:05:10.158463-05:00] STEP_SUBPHASE_START name=post_core idx=2/13 cmd=scripts/run_ifrs9_sensitivity.py
+[2026-03-13T07:05:17.667756-05:00] STEP_SUBPHASE_END name=post_core idx=2/13 ec=0
+[2026-03-13T07:05:17.667907-05:00] STEP_SUBPHASE_START name=post_core idx=3/13 cmd=scripts/build_pipeline_results.py
+[2026-03-13T07:05:19.174963-05:00] STEP_SUBPHASE_END name=post_core idx=3/13 ec=0
+[2026-03-13T07:05:19.175101-05:00] STEP_SUBPHASE_START name=post_core idx=4/13 cmd=scripts/build_pd_challenger_artifacts.py
+[2026-03-13T07:05:55.696428-05:00] STEP_SUBPHASE_END name=post_core idx=4/13 ec=0
+[2026-03-13T07:05:55.696559-05:00] STEP_SUBPHASE_START name=post_core idx=5/13 cmd=scripts/run_fairness_audit.py
+[2026-03-13T07:06:08.708424-05:00] STEP_SUBPHASE_END name=post_core idx=5/13 ec=0
+[2026-03-13T07:06:08.708569-05:00] STEP_SUBPHASE_START name=post_core idx=6/13 cmd=scripts/generate_governance_status.py
+[2026-03-13T07:06:23.220290-05:00] STEP_SUBPHASE_END name=post_core idx=6/13 ec=0
+[2026-03-13T07:06:23.220431-05:00] STEP_SUBPHASE_START name=post_core idx=7/13 cmd=scripts/update_champion_registry.py
+[2026-03-13T07:06:23.722132-05:00] STEP_SUBPHASE_END name=post_core idx=7/13 ec=0
+[2026-03-13T07:06:23.722267-05:00] STEP_SUBPHASE_START name=post_core idx=8/13 cmd=scripts/build_champion_search_bundle.py
+[2026-03-13T07:06:24.224076-05:00] STEP_SUBPHASE_END name=post_core idx=8/13 ec=0
+[2026-03-13T07:06:24.224214-05:00] STEP_SUBPHASE_START name=post_core idx=9/13 cmd=scripts/generate_mrm_report.py
+[2026-03-13T07:06:24.725951-05:00] STEP_SUBPHASE_END name=post_core idx=9/13 ec=0
+[2026-03-13T07:06:24.726095-05:00] STEP_SUBPHASE_START name=post_core idx=10/13 cmd=scripts/export_streamlit_artifacts.py
+[2026-03-13T07:07:27.260563-05:00] STEP_SUBPHASE_END name=post_core idx=10/13 ec=0
+[2026-03-13T07:07:27.260706-05:00] STEP_SUBPHASE_START name=post_core idx=11/13 cmd=scripts/export_storytelling_snapshot.py
+[2026-03-13T07:07:28.262646-05:00] STEP_SUBPHASE_END name=post_core idx=11/13 ec=0
+[2026-03-13T07:07:28.262766-05:00] STEP_SUBPHASE_START name=post_core idx=12/13 cmd=scripts/export_dvc_metrics.py
+[2026-03-13T07:07:29.765500-05:00] STEP_SUBPHASE_END name=post_core idx=12/13 ec=0
+[2026-03-13T07:07:29.765656-05:00] STEP_SUBPHASE_START name=post_core idx=13/13 cmd=scripts/run_comparison.py
+[2026-03-13T07:07:34.268532-05:00] STEP_SUBPHASE_END name=post_core idx=13/13 ec=0
+[2026-03-13T07:07:34.304294-05:00] STEP_END name=post_core ec=0 duration_s=145.6
+[2026-03-13T07:07:34.305078-05:00] STEP_START name=rapids required=0
+[2026-03-13T07:07:34.305352-05:00] STEP_SUBPHASE_START name=rapids idx=1/3 cmd=uv run python -u scripts/ensure_memory_headroom.py --label rapids --min-mem-gb 6 --min-swap-gb 4 --min-total-headroom-gb
+[2026-03-13T07:07:34.807498-05:00] STEP_SUBPHASE_END name=rapids idx=1/3 ec=0
+[2026-03-13T07:07:34.807621-05:00] STEP_SUBPHASE_START name=rapids idx=2/3 cmd=scripts/side_projects/run_rapids_benchmarks.sh
+[2026-03-13T07:10:01.758949-05:00] STEP_SUBPHASE_END name=rapids idx=2/3 ec=0
+[2026-03-13T07:10:01.759080-05:00] STEP_SUBPHASE_START name=rapids idx=3/3 cmd=/home/eigenlinux/miniforge3/envs/rapids/bin/python -u scripts/run_ifrs9_monte_carlo_gpu.py --n-scenarios 8192 --chunk-si
+[2026-03-13T07:12:16.383866-05:00] STEP_SUBPHASE_END name=rapids idx=3/3 ec=0
+[2026-03-13T07:12:16.384377-05:00] STEP_END name=rapids ec=0 duration_s=282.1
+[2026-03-13T07:12:16.384779-05:00] STEP_START name=notebooks required=0
+[2026-03-13T07:12:16.385118-05:00] STEP_SUBPHASE_START name=notebooks idx=1/3 cmd=scripts/ensure_memory_headroom.py
+[2026-03-13T07:12:16.887073-05:00] STEP_SUBPHASE_END name=notebooks idx=1/3 ec=0
+[2026-03-13T07:12:16.887222-05:00] STEP_SUBPHASE_START name=notebooks idx=2/3 cmd=scripts/run_all_notebooks.py
+[2026-03-13T07:31:42.161689-05:00] STEP_SUBPHASE_END name=notebooks idx=2/3 ec=0
+[2026-03-13T07:31:42.161942-05:00] STEP_SUBPHASE_START name=notebooks idx=3/3 cmd=scripts/extract_notebook_images.py
+[2026-03-13T07:31:43.665002-05:00] STEP_SUBPHASE_END name=notebooks idx=3/3 ec=0
+[2026-03-13T07:31:43.665888-05:00] STEP_END name=notebooks ec=0 duration_s=1167.3
+[2026-03-13T07:31:43.667695-05:00] RUN_END final_ec=0 failed_steps=[]
