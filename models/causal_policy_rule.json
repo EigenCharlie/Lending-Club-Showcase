@@ -32,6 +32,6 @@
   "promotion_decider": "optimize_cate_portfolio.py",
   "policy_evaluation_consistent": false,
   "schema_version": "2026-03-07.1",
-  "generated_at_utc": "2026-03-18T02:33:28.602965+00:00",
-  "run_tag": "paper-grade-2026-03-13-final-heavy-2026-03-13-230650"
+  "generated_at_utc": "2026-03-22T05:19:19.784192+00:00",
+  "run_tag": "paper-grade-2026-03-22"
 }

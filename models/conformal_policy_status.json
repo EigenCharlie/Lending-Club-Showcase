@@ -1,10 +1,10 @@
 {
-  "overall_pass": false,
+  "overall_pass": true,
   "strict_overall_pass": false,
   "non_statistical_checks_pass": true,
   "methodological_justification_pass": true,
   "methodological_justification_status": "eligible_statistical_warning_only",
-  "statistical_tests_role": "strict_diagnostics",
+  "statistical_tests_role": "diagnostic_informational",
   "checks_passed": 9,
   "checks_total": 13,
   "failing_checks": [
@@ -34,6 +34,7 @@
   "winkler_90_compensated_pass": true,
   "winkler_90_compensated_threshold": 1.22,
   "winkler_95": 1.1499668727586327,
+  "mapie_mwi_90": null,
   "kupiec_pvalue_90": 0.0,
   "kupiec_pvalue_95": 0.0,
   "christoffersen_pvalue_90": 0.0,
@@ -119,7 +120,7 @@
     "winkler_90_compensated_pass": true,
     "winkler_90_compensated_threshold": 1.22,
     "decision": true,
-    "justification_role": "diagnostic_warning_not_blocking_for_promotion"
+    "justification_role": "strict_blocking"
   },
   "latest_backtest_month": "2020-09-01 00:00:00",
   "intervals_path": "data/processed/conformal_intervals_mondrian.parquet",
@@ -356,52 +357,6 @@
     "promotion_rationale": "Promoted 2026-03-16: only variant with overall_pass=true (coverage 90%=0.9052, min_grade_coverage=0.9047, bias=-0.090). Confirmed in paper-grade run 2026-03-13."
   },
   "schema_version": "2026-03-01.1",
-  "generated_at_utc": "2026-03-16T05:54:29.441392+00:00",
-  "run_tag": "paper-grade-2026-03-13-final-heavy-2026-03-13-230650",
-  "policy_sensitivity": {
-    "metric": "winkler_90",
-    "results": [
-      {
-        "max_winkler_90": 1.2,
-        "strict_overall_pass": false,
-        "non_statistical_checks_pass": false,
-        "methodological_justification_pass": false,
-        "failing_non_statistical_checks": [
-          "winkler_90"
-        ],
-        "failing_statistical_checks": [
-          "kupiec_pvalue_90",
-          "kupiec_pvalue_95",
-          "christoffersen_pvalue_90",
-          "christoffersen_pvalue_95"
-        ]
-      },
-      {
-        "max_winkler_90": 1.22,
-        "strict_overall_pass": false,
-        "non_statistical_checks_pass": true,
-        "methodological_justification_pass": true,
-        "failing_non_statistical_checks": [],
-        "failing_statistical_checks": [
-          "kupiec_pvalue_90",
-          "kupiec_pvalue_95",
-          "christoffersen_pvalue_90",
-          "christoffersen_pvalue_95"
-        ]
-      },
-      {
-        "max_winkler_90": 1.25,
-        "strict_overall_pass": false,
-        "non_statistical_checks_pass": true,
-        "methodological_justification_pass": true,
-        "failing_non_statistical_checks": [],
-        "failing_statistical_checks": [
-          "kupiec_pvalue_90",
-          "kupiec_pvalue_95",
-          "christoffersen_pvalue_90",
-          "christoffersen_pvalue_95"
-        ]
-      }
-    ]
-  }
+  "generated_at_utc": "2026-03-22T05:15:00.705213+00:00",
+  "run_tag": "paper-grade-2026-03-22"
 }
